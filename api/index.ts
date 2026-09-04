@@ -79,7 +79,9 @@ export default async function handler(req: any, res: any) {
 
   try {
     // Resolve URL path
-    let url = req.url || '/api/health';
+    const forwardedUrl = (req.headers?.['x-matched-path'] || req.headers?.['x-forwarded-url'] || '') as string;
+    let url = (forwardedUrl && forwardedUrl.startsWith('/api')) ? forwardedUrl : (req.url || '/api/health');
+
     if (req.query?.path) {
       const pathSegment = Array.isArray(req.query.path)
         ? req.query.path.join('/')

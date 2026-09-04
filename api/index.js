@@ -18598,7 +18598,7 @@ async function handleApiRequest(url, method, body, headers) {
     const pathname = parsedUrl.pathname;
     const authHeader = headers?.authorization || headers?.Authorization;
     const authUser = await authenticateRequest(authHeader);
-    if (pathname === "/api/health" && method === "GET") {
+    if ((pathname === "/api/health" || pathname === "/api" || pathname === "/api/") && method === "GET") {
       try {
         await db.execute(sql`SELECT 1`);
         return {
@@ -18608,7 +18608,7 @@ async function handleApiRequest(url, method, body, headers) {
       } catch (dbErr) {
         return {
           status: 503,
-          data: { ok: false, database: "unavailable", error: "Database connection failed" }
+          data: { ok: false, database: "unavailable", error: dbErr?.message || "Database connection failed" }
         };
       }
     }
@@ -19031,7 +19031,8 @@ async function handler(req, res) {
     return;
   }
   try {
-    let url = req.url || "/api/health";
+    const forwardedUrl = req.headers?.["x-matched-path"] || req.headers?.["x-forwarded-url"] || "";
+    let url = forwardedUrl && forwardedUrl.startsWith("/api") ? forwardedUrl : req.url || "/api/health";
     if (req.query?.path) {
       const pathSegment = Array.isArray(req.query.path) ? req.query.path.join("/") : req.query.path;
       url = `/api/${pathSegment}`;

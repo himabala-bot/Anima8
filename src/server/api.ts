@@ -41,7 +41,7 @@ export async function handleApiRequest(
     const authUser = await authenticateRequest(authHeader);
 
     // 1. Health Check
-    if (pathname === '/api/health' && method === 'GET') {
+    if ((pathname === '/api/health' || pathname === '/api' || pathname === '/api/') && method === 'GET') {
       try {
         await db.execute(sql`SELECT 1`);
         return {
@@ -51,7 +51,7 @@ export async function handleApiRequest(
       } catch (dbErr: any) {
         return {
           status: 503,
-          data: { ok: false, database: 'unavailable', error: 'Database connection failed' },
+          data: { ok: false, database: 'unavailable', error: dbErr?.message || 'Database connection failed' },
         };
       }
     }
