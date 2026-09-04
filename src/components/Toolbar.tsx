@@ -99,10 +99,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
   return (
     <aside
-      className={`relative flex md:flex-col items-center justify-start gap-1 p-1.5 rounded-2xl md:rounded-3xl bg-white border border-[#E5E5EA] shadow-lg shadow-zinc-200/50 select-none z-30 overflow-visible ${className}`}
+      className={`relative flex flex-col items-center justify-start gap-1 p-1 sm:p-1.5 rounded-2xl md:rounded-3xl bg-white border border-[#E5E5EA] shadow-lg shadow-zinc-200/50 select-none z-30 max-h-full overflow-y-auto ${className}`}
     >
-      {/* 2-Column Compact Grid on Desktop, Horizontal Scroll on Mobile */}
-      <div className="flex md:grid md:grid-cols-2 items-center gap-1 overflow-x-auto md:overflow-visible">
+      {/* 2-Column Compact Grid */}
+      <div className="grid grid-cols-2 items-center gap-1">
         {tools.map((t) => {
           const isActive = activeTool === t.id;
           return (
@@ -111,7 +111,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               onClick={() => setTool(t.id)}
               title={`${t.label} (${t.shortcut})`}
               aria-label={t.label}
-              className={`relative flex items-center justify-center min-w-[34px] min-h-[34px] w-8 h-8 md:w-8.5 md:h-8.5 rounded-xl transition-all duration-150 group ${
+              className={`relative flex items-center justify-center min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-xl transition-all duration-150 group ${
                 isActive
                   ? 'bg-black text-white shadow-md shadow-black/20 scale-105'
                   : 'text-[#71717A] hover:text-[#18181B] hover:bg-[#F1F1F5]'
@@ -131,7 +131,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             onClick={() => setIsBrushSettingsOpen(!isBrushSettingsOpen)}
             title="Brush & Tool Properties"
             aria-label="Tool Properties"
-            className={`flex items-center justify-center min-w-[34px] min-h-[34px] w-8 h-8 md:w-8.5 md:h-8.5 rounded-xl transition-colors ${
+            className={`flex items-center justify-center min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-xl transition-colors ${
               isBrushSettingsOpen
                 ? 'bg-black text-white font-bold'
                 : 'text-[#71717A] hover:text-[#18181B] hover:bg-[#F1F1F5]'
@@ -142,7 +142,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
           {/* Compact Dropdown Flyout Panel */}
           {isBrushSettingsOpen && (
-            <div className="absolute left-1/2 -translate-x-1/2 md:translate-x-0 md:left-full bottom-full md:bottom-0 md:top-auto mb-3 md:mb-0 md:ml-3 w-60 p-3 rounded-2xl bg-white border border-[#E5E5EA] shadow-2xl z-50 text-[#18181B] animate-in fade-in zoom-in-95 duration-150 space-y-2.5 max-h-[320px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300">
+            <div className="absolute left-full top-0 ml-2 sm:ml-3 w-60 p-3 rounded-2xl bg-white border border-[#E5E5EA] shadow-2xl z-50 text-[#18181B] animate-in fade-in zoom-in-95 duration-150 space-y-2.5 max-h-[320px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300">
               {activeTool === 'eraser' ? (
                 /* Eraser Settings */
                 <div className="space-y-2.5">
@@ -251,18 +251,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </div>
       </div>
 
-      <div className="hidden md:block w-full h-[1px] bg-[#E5E5EA] my-0.5 flex-shrink-0" />
-      <div className="md:hidden w-[1px] h-6 bg-[#E5E5EA] mx-0.5 flex-shrink-0" />
+      <div className="w-full h-[1px] bg-[#E5E5EA] my-0.5 flex-shrink-0" />
 
       {/* Color Studio & Canvas Background Row */}
-      <div className="flex md:grid md:grid-cols-2 items-center gap-1">
+      <div className="grid grid-cols-2 items-center gap-1">
         {/* Color Studio Swatch */}
         <div className="relative" ref={paletteRef}>
           <button
             onClick={() => setIsPaletteOpen(!isPaletteOpen)}
             title="Color Studio & Palettes"
             aria-label="Color Studio"
-            className="relative flex items-center justify-center min-w-[34px] min-h-[34px] w-8 h-8 md:w-8.5 md:h-8.5 rounded-xl bg-white border-2 border-[#E5E5EA] hover:border-black transition-all shadow-sm group overflow-hidden"
+            className="relative flex items-center justify-center min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-xl bg-white border-2 border-[#E5E5EA] hover:border-black transition-all shadow-sm group overflow-hidden"
           >
             <div
               className="w-4 h-4 md:w-4.5 md:h-4.5 rounded-md shadow-inner ring-1 ring-black/10 transition-transform group-hover:scale-110"
@@ -275,7 +274,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
           {/* Compact Dropdown Flyout Panel */}
           {isPaletteOpen && (
-            <div className="absolute left-1/2 -translate-x-1/2 md:translate-x-0 md:left-full bottom-full md:bottom-0 md:top-auto mb-3 md:mb-0 md:ml-3 w-64 p-3 rounded-2xl bg-white border border-[#E5E5EA] shadow-2xl z-50 text-[#18181B] animate-in fade-in zoom-in-95 duration-150 space-y-3">
+            <div className="absolute left-full top-0 ml-2 sm:ml-3 w-64 p-3 rounded-2xl bg-white border border-[#E5E5EA] shadow-2xl z-50 text-[#18181B] animate-in fade-in zoom-in-95 duration-150 space-y-3 max-h-[320px] overflow-y-auto">
               {/* Header */}
               <div className="flex items-center justify-between pb-2 border-b border-[#E5E5EA]">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#18181B]">
@@ -400,14 +399,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             onClick={() => setIsBgOpen(!isBgOpen)}
             title="Canvas Background"
             aria-label="Canvas Background"
-            className="flex items-center justify-center min-w-[34px] min-h-[34px] w-8 h-8 md:w-8.5 md:h-8.5 rounded-xl text-[#71717A] hover:text-[#18181B] hover:bg-[#F1F1F5] transition-colors"
+            className="flex items-center justify-center min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-xl text-[#71717A] hover:text-[#18181B] hover:bg-[#F1F1F5] transition-colors"
           >
             <Layers className="w-3.5 h-3.5" />
           </button>
 
           {/* Compact Dropdown Flyout Panel */}
           {isBgOpen && (
-            <div className="absolute left-1/2 -translate-x-1/2 md:translate-x-0 md:left-full bottom-full md:bottom-0 md:top-auto mb-3 md:mb-0 md:ml-3 w-48 p-2.5 rounded-2xl bg-white border border-[#E5E5EA] shadow-xl z-50 text-[#18181B] animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute left-full top-0 ml-2 sm:ml-3 w-48 p-2.5 rounded-2xl bg-white border border-[#E5E5EA] shadow-xl z-50 text-[#18181B] animate-in fade-in zoom-in-95 duration-150">
               <span className="block text-xs font-bold text-[#18181B] pb-1 mb-1.5 border-b border-[#E5E5EA]">
                 Background
               </span>

@@ -39,6 +39,8 @@ import {
   CloudOff,
   User,
   Trash2,
+  Smartphone,
+  RotateCw,
 } from 'lucide-react';
 import { syncEngine, CloudSyncState } from '../lib/sync/syncQueue';
 import { useAuthStore } from '../store/useAuthStore';
@@ -114,6 +116,45 @@ export default function Anim8App() {
   const prevFrame = useStudioStore((state) => state.prevFrame);
   const setIsPlaying = useStudioStore((state) => state.setIsPlaying);
   const saveToStorage = useStudioStore((state) => state.saveToStorage);
+
+  // Orientation & Device Detection for Landscape-First Mobile Studio
+  const [isPortrait, setIsPortrait] = useState<boolean>(false);
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState<boolean>(false);
+  const [hasDismissedRotatePrompt, setHasDismissedRotatePrompt] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isNarrow = window.innerWidth <= 1024;
+      setIsMobileOrTablet(isTouch || isNarrow);
+      setIsPortrait(window.innerHeight > window.innerWidth);
+    };
+
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, []);
+
+  const requestLandscape = async () => {
+    try {
+      if (screen.orientation && 'lock' in screen.orientation) {
+        // @ts-expect-error Screen Orientation API lock
+        await screen.orientation.lock('landscape');
+      } else if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+        if (screen.orientation && 'lock' in screen.orientation) {
+          // @ts-expect-error Screen Orientation API lock
+          await screen.orientation.lock('landscape');
+        }
+      }
+    } catch {
+      // Fallback: silently ignored if unsupported
+    }
+  };
 
   // Close popovers on click outside
   useEffect(() => {
@@ -622,10 +663,10 @@ export default function Anim8App() {
         </div>
       </header>
 
-      {/* 2. MAIN WORKSPACE */}
-      <div className="flex-1 flex flex-col md:flex-row min-h-0 min-w-0 overflow-hidden relative">
-        {/* Left Toolbar Rail (2-column compact) */}
-        <div className="hidden md:flex flex-shrink-0 px-3 py-2 items-center justify-center max-h-full min-h-0 z-20">
+      {/* 2. MAIN WORKSPACE (Landscape-First Studio) */}
+      <div className="flex-1 flex flex-row min-h-0 min-w-0 overflow-hidden relative">
+        {/* Left Toolbar Rail (Compact 2-column dock, always on left for landscape animation studio workflow) */}
+        <div className="flex flex-shrink-0 px-1.5 sm:px-3 py-1 sm:py-2 items-center justify-center max-h-full min-h-0 z-20">
           <Toolbar />
         </div>
 
@@ -647,10 +688,41 @@ export default function Anim8App() {
         <Timeline onOpenAudioModal={() => setIsAudioModalOpen(true)} />
       </div>
 
-      {/* 4. MOBILE BOTTOM TOOLBAR DOCK */}
-      <div className="flex md:hidden flex-shrink-0 px-2 pb-2 pt-0 z-20">
-        <Toolbar className="w-full" />
-      </div>
+      {/* 4. LANDSCAPE PROMPT / OVERLAY (When on Mobile Portrait) */}
+      {isMobileOrTablet && isPortrait && !hasDismissedRotatePrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-6 text-white text-center">
+          <div className="max-w-xs flex flex-col items-center gap-4 bg-zinc-900/90 border border-zinc-700/80 p-6 rounded-3xl shadow-2xl">
+            <div className="relative w-16 h-16 flex items-center justify-center bg-zinc-800/80 rounded-2xl border border-zinc-700">
+              <Smartphone className="w-9 h-9 text-purple-400 rotate-90 transition-transform duration-700" />
+              <RotateCw className="w-5 h-5 text-cyan-400 absolute -top-1 -right-1 animate-spin" style={{ animationDuration: '4s' }} />
+            </div>
+            
+            <div className="space-y-1.5">
+              <h2 className="text-base font-extrabold tracking-tight text-zinc-100">
+                Rotate for Studio View
+              </h2>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Anima8 is designed for landscape drawing, timeline control, and multi-touch gestures.
+              </p>
+            </div>
+
+            <div className="flex flex-col w-full gap-2 pt-2">
+              <button
+                onClick={requestLandscape}
+                className="w-full py-2.5 px-4 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-600/30 transition-transform active:scale-95"
+              >
+                Switch to Landscape
+              </button>
+              <button
+                onClick={() => setHasDismissedRotatePrompt(true)}
+                className="w-full py-2 px-4 text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-colors"
+              >
+                Continue in Portrait
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modals & Dialogs */}
       <ExportModal
