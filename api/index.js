@@ -19000,7 +19000,8 @@ async function parseBody(req) {
   }
   return void 0;
 }
-function sendResponse(res, status, data) {
+function sendNodeResponse(res, status, data) {
+  if (!res) return;
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Credentials": "true",
@@ -19009,8 +19010,11 @@ function sendResponse(res, status, data) {
     "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
   };
   for (const [key, value] of Object.entries(headers)) {
-    if (typeof res.setHeader === "function") {
-      res.setHeader(key, value);
+    try {
+      if (typeof res.setHeader === "function") {
+        res.setHeader(key, value);
+      }
+    } catch {
     }
   }
   if (typeof res.status === "function" && typeof res.json === "function") {
@@ -19021,37 +19025,84 @@ function sendResponse(res, status, data) {
   res.end(JSON.stringify(data));
 }
 async function handler(req, res) {
-  if (req.method === "OPTIONS") {
-    if (typeof res.status === "function") {
+  if (!res && req && (typeof req.json === "function" || typeof req.text === "function" || req instanceof Request)) {
+    try {
+      const request = req;
+      const parsedUrl = new URL(request.url, "http://localhost");
+      let pathname = parsedUrl.pathname;
+      const method = request.method || "GET";
+      if (method === "OPTIONS") {
+        return new Response(null, {
+          status: 200,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,DELETE,POST,PUT",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-CSRF-Token"
+          }
+        });
+      }
+      let body = void 0;
+      if (method !== "GET" && method !== "HEAD") {
+        try {
+          body = await request.json();
+        } catch {
+          body = await request.text().catch(() => void 0);
+        }
+      }
+      const headers = {};
+      request.headers.forEach((val, key) => {
+        headers[key] = val;
+      });
+      const forwardedUrl = headers["x-matched-path"] || headers["x-forwarded-url"];
+      if (forwardedUrl && forwardedUrl.startsWith("/api")) {
+        pathname = forwardedUrl;
+      }
+      const result = await handleApiRequest(pathname, method, body, headers);
+      return new Response(JSON.stringify(result.data), {
+        status: result.status,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET,OPTIONS,PATCH,DELETE,POST,PUT"
+        }
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err?.message || "Server Error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+  }
+  if (req?.method === "OPTIONS") {
+    if (typeof res?.status === "function") {
       res.status(200).end();
-    } else {
+    } else if (res) {
       res.statusCode = 200;
       res.end();
     }
     return;
   }
   try {
-    const forwardedUrl = req.headers?.["x-matched-path"] || req.headers?.["x-forwarded-url"] || "";
-    let url = forwardedUrl && forwardedUrl.startsWith("/api") ? forwardedUrl : req.url || "/api/health";
-    if (req.query?.path) {
+    const forwardedUrl = req?.headers?.["x-matched-path"] || req?.headers?.["x-forwarded-url"] || "";
+    let url = forwardedUrl && forwardedUrl.startsWith("/api") ? forwardedUrl : req?.url || "/api/health";
+    if (req?.query?.path) {
       const pathSegment = Array.isArray(req.query.path) ? req.query.path.join("/") : req.query.path;
-      url = `/api/${pathSegment}`;
-    } else if (req.query?.slug) {
-      const pathSegment = Array.isArray(req.query.slug) ? req.query.slug.join("/") : req.query.slug;
       url = `/api/${pathSegment}`;
     } else if (!url.startsWith("/api")) {
       url = `/api${url.startsWith("/") ? "" : "/"}${url}`;
     }
-    const method = req.method || "GET";
+    const method = req?.method || "GET";
     const body = await parseBody(req);
-    const headers = req.headers || {};
+    const headers = req?.headers || {};
     const result = await handleApiRequest(url, method, body, headers);
-    sendResponse(res, result.status, result.data);
+    sendNodeResponse(res, result.status, result.data);
+    return result.data;
   } catch (error) {
     console.error("Fatal Serverless API Error:", error);
-    sendResponse(res, 500, {
+    sendNodeResponse(res, 500, {
       error: error?.message || "Internal Server Error"
     });
+    return { error: error?.message || "Internal Server Error" };
   }
 }
 export {
