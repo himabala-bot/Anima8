@@ -24,6 +24,7 @@ class SyncEngine {
   private syncTimer: any = null;
   private listeners: Set<SyncEngineListener> = new Set();
   private currentState: CloudSyncState = 'idle';
+  private authToken: string | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -35,6 +36,10 @@ class SyncEngine {
         this.notify('offline', 0);
       });
     }
+  }
+
+  public setAuthToken(token: string | null) {
+    this.authToken = token;
   }
 
   public subscribe(listener: SyncEngineListener): () => void {
@@ -98,6 +103,12 @@ class SyncEngine {
       return;
     }
 
+    // Only sync to cloud if authenticated
+    if (!this.authToken) {
+      this.notify('idle', 0);
+      return;
+    }
+
     this.isProcessing = true;
     try {
       const items = await getPendingSyncOps();
@@ -111,9 +122,16 @@ class SyncEngine {
 
       // Process in batches of up to 25 items
       const batch = items.slice(0, 25);
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (this.authToken) {
+        headers['Authorization'] = `Bearer ${this.authToken}`;
+      }
+
       const res = await fetch('/api/sync', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ operations: batch }),
       });
 

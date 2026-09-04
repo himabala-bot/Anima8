@@ -46,7 +46,8 @@ const DB_NAME = 'Anim8DB_v1';
 const LEGACY_DB_NAME = 'ChibiMotionDB_v2';
 const STORE_PROJECTS = 'projects';
 const STORE_SYNC_QUEUE = 'sync_queue';
-const DB_VERSION = 1;
+const STORE_AUTH = 'auth_session';
+const DB_VERSION = 2;
 
 let isMigrated = false;
 
@@ -69,6 +70,11 @@ function openDB(): Promise<IDBDatabase> {
         queueStore.createIndex('status', 'status', { unique: false });
         queueStore.createIndex('timestamp', 'timestamp', { unique: false });
         queueStore.createIndex('projectId', 'projectId', { unique: false });
+      }
+
+      // 3. Auth Session Store (Zero localStorage adherence)
+      if (!db.objectStoreNames.contains(STORE_AUTH)) {
+        db.createObjectStore(STORE_AUTH, { keyPath: 'key' });
       }
     };
 
@@ -258,6 +264,64 @@ export async function getSyncQueueCount(): Promise<{ pending: number; failed: nu
       }
       resolve({ pending, failed });
     };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// -------------------------------------------------------------
+// AUTH SESSION STORE OPERATIONS (Zero localStorage)
+// -------------------------------------------------------------
+
+export interface AuthSessionRecord {
+  key: 'current_session';
+  token: string;
+  user: {
+    id: string;
+    profileId: string;
+    email: string;
+    displayName: string;
+    avatarUrl?: string | null;
+  };
+  savedAt: number;
+}
+
+export async function saveAuthSessionToDB(session: {
+  token: string;
+  user: AuthSessionRecord['user'];
+}): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_AUTH, 'readwrite');
+    const store = tx.objectStore(STORE_AUTH);
+    const req = store.put({
+      key: 'current_session',
+      token: session.token,
+      user: session.user,
+      savedAt: Date.now(),
+    });
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getAuthSessionFromDB(): Promise<AuthSessionRecord | null> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_AUTH, 'readonly');
+    const store = tx.objectStore(STORE_AUTH);
+    const req = store.get('current_session');
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function clearAuthSessionFromDB(): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_AUTH, 'readwrite');
+    const store = tx.objectStore(STORE_AUTH);
+    const req = store.delete('current_session');
+    req.onsuccess = () => resolve();
     req.onerror = () => reject(req.error);
   });
 }

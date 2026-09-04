@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { projectRepository } from '../repositories/projectRepository';
 import { ProjectRecord } from '../utils/indexedDB';
+import { useAuthStore } from '../store/useAuthStore';
+import { AuthModal } from './AuthModal';
 import {
   Sparkles,
   Plus,
@@ -21,6 +23,9 @@ import {
   Clock,
   X,
   Check,
+  Cloud,
+  CloudOff,
+  UploadCloud,
 } from 'lucide-react';
 
 interface HomePageProps {
@@ -32,6 +37,13 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'edited' | 'created' | 'name'>('edited');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+
+  const { user, isAuthenticated, initAuth } = useAuthStore();
+
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
 
   // New Project Modal State
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState<boolean>(false);
@@ -200,7 +212,29 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          {isAuthenticated && user ? (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              title={`Account: ${user.displayName} (${user.email})`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-[#F1F1F5] hover:bg-[#E5E5EA] border border-[#E5E5EA] text-[#18181B] transition-colors"
+            >
+              <div className="w-5 h-5 rounded-full bg-black text-white text-[10px] flex items-center justify-center font-bold">
+                {user.displayName.charAt(0).toUpperCase()}
+              </div>
+              <span className="hidden sm:inline max-w-[90px] truncate">{user.displayName}</span>
+              <Cloud className="w-3.5 h-3.5 text-emerald-600 ml-0.5" />
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold bg-white hover:bg-[#F1F1F5] border border-[#E5E5EA] text-[#18181B] transition-colors shadow-2xs"
+            >
+              <User className="w-3.5 h-3.5 text-black" />
+              <span>Sign In / Cloud</span>
+            </button>
+          )}
+
           <button
             onClick={() => setIsNewProjectModalOpen(true)}
             className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs font-bold bg-black hover:bg-zinc-800 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -347,6 +381,18 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                     {/* Frame Count Pill */}
                     <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-md border border-[#E5E5EA] text-[10px] font-mono font-bold text-[#18181B] shadow-xs">
                       {frameCount} {frameCount === 1 ? 'frame' : 'frames'}
+                    </span>
+
+                    {/* Cloud Sync Status Pill */}
+                    <span
+                      title={isAuthenticated ? 'Cloud Synced with Neon' : 'Saved locally in IndexedDB'}
+                      className="absolute top-2 right-2 p-1 rounded-md bg-white/90 backdrop-blur-md border border-[#E5E5EA] shadow-xs flex items-center justify-center"
+                    >
+                      {isAuthenticated ? (
+                        <Cloud className="w-3 h-3 text-emerald-600" />
+                      ) : (
+                        <CloudOff className="w-3 h-3 text-zinc-400" />
+                      )}
                     </span>
                   </div>
 
@@ -632,6 +678,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
           </div>
         </div>
       )}
+
+      {/* Auth & Profile Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </div>
   );
 };

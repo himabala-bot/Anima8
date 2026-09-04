@@ -35,11 +35,14 @@ import {
   CheckCircle2,
   Loader2,
   ArrowLeft,
-  Trash2,
   Cloud,
   CloudOff,
+  User,
+  Trash2,
 } from 'lucide-react';
 import { syncEngine, CloudSyncState } from '../lib/sync/syncQueue';
+import { useAuthStore } from '../store/useAuthStore';
+import { AuthModal } from '../components/AuthModal';
 
 export default function Anim8App() {
   const { path, projectId: routeProjectId, navigate } = useRouter();
@@ -72,7 +75,10 @@ export default function Anim8App() {
   const [isReferenceModalOpen, setIsReferenceModalOpen] = useState<boolean>(false);
   const [isAudioModalOpen, setIsAudioModalOpen] = useState<boolean>(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isLayerPanelOpen, setIsLayerPanelOpen] = useState<boolean>(true);
+
+  const { user, isAuthenticated } = useAuthStore();
 
   const [isOnionPopoverOpen, setIsOnionPopoverOpen] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
@@ -466,6 +472,28 @@ export default function Anim8App() {
             <HelpCircle className="w-4 h-4" />
           </button>
 
+          {/* User Account / Cloud Sync Trigger */}
+          {isAuthenticated && user ? (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              title={`Account: ${user.displayName}`}
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white border border-[#E5E5EA] text-xs font-semibold text-[#18181B] hover:bg-[#F1F1F5] transition-colors"
+            >
+              <div className="w-4 h-4 rounded-full bg-black text-white text-[9px] flex items-center justify-center font-bold">
+                {user.displayName.charAt(0).toUpperCase()}
+              </div>
+              <span className="max-w-[70px] truncate">{user.displayName}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white border border-[#E5E5EA] text-xs font-medium text-[#71717A] hover:text-[#18181B] hover:bg-[#F1F1F5] transition-colors"
+            >
+              <User className="w-3.5 h-3.5 text-black" />
+              <span>Cloud</span>
+            </button>
+          )}
+
           {/* Mobile Overflow Menu */}
           <div className="relative md:hidden" ref={mobileMenuRef}>
             <button
@@ -653,6 +681,11 @@ export default function Anim8App() {
       <ShortcutsModal
         isOpen={isShortcutsModalOpen}
         onClose={() => setIsShortcutsModalOpen(false)}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </main>
   );

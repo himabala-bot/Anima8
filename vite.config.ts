@@ -33,7 +33,12 @@ function neonApiPlugin(): Plugin {
             }
           }
 
-          const response = await handleApiRequest(req.url, req.method || 'GET', body);
+          const response = await handleApiRequest(
+            req.url,
+            req.method || 'GET',
+            body,
+            req.headers as Record<string, string | undefined>
+          );
           res.statusCode = response.status;
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify(response.data));
