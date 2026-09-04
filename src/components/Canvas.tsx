@@ -79,13 +79,24 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const copiedSelection = useStudioStore((state) => state.copiedSelection);
   const setReferenceImage = useStudioStore((state) => state.setReferenceImage);
 
+  // Multi-Touch & Real Pinch Zoom Interaction Refs
+  const activePointersRef = useRef<Map<number, { clientX: number; clientY: number }>>(new Map());
+  const pinchStateRef = useRef<{
+    isActive: boolean;
+    initialDistance: number;
+    initialMidpoint: { x: number; y: number };
+    initialZoom: number;
+    initialPan: { x: number; y: number };
+  }>({
+    isActive: false,
+    initialDistance: 0,
+    initialMidpoint: { x: 0, y: 0 },
+    initialZoom: 100,
+    initialPan: { x: 0, y: 0 },
+  });
+
   // Smooth Pan Offset (Transform Translate based - works in all directions infinitely)
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const panOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  useEffect(() => {
-    panOffsetRef.current = panOffset;
-  }, [panOffset]);
-
   const isPanningRef = useRef<boolean>(false);
   const panStartRef = useRef<{ clientX: number; clientY: number; originX: number; originY: number }>({
     clientX: 0,
@@ -95,23 +106,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   });
   const isSpacePressedRef = useRef<boolean>(false);
   const [isPanMode, setIsPanMode] = useState<boolean>(false);
-
-  // Multi-Touch Pinch-to-Zoom & Pan Tracking Refs
-  const activePointersRef = useRef<Map<number, { clientX: number; clientY: number }>>(new Map());
-  const isPinchZoomingRef = useRef<boolean>(false);
-  const pinchStartRef = useRef<{
-    distance: number;
-    midpoint: { x: number; y: number };
-    zoom: number;
-    panOffset: { x: number; y: number };
-  }>({
-    distance: 0,
-    midpoint: { x: 0, y: 0 },
-    zoom: 100,
-    panOffset: { x: 0, y: 0 },
-  });
-  const preStrokeDataUrlRef = useRef<string | null>(null);
-  const ignoreSingleTouchUntilLiftRef = useRef<boolean>(false);
 
   // Reference Image Freeform Transform Mode
   const [isAdjustingReference, setIsAdjustingReference] = useState<boolean>(false);
@@ -160,7 +154,78 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const zoomPresets = [25, 50, 75, 100, 150, 200, 300, 400, 500, 800, 1000];
 
   /**
-   * PREVENT WHOLE-PAGE BROWSER ZOOM ON 2-FINGER TRACKPAD PINCH
+   * CANCEL ACTIVE DRAWING STROKE (e.g. when second finger touches down for pinch/pan)
+   */
+  const cancelActiveDrawingStroke = useCallback(() => {
+    if (!isDrawingRef.current) return;
+    isDrawingRef.current = false;
+    startPointRef.current = null;
+    lastPointRef.current = null;
+
+    // Clear preview canvas
+    const prevCanvas = previewCanvasRef.current;
+    if (prevCanvas) {
+      const prevCtx = prevCanvas.getContext('2d');
+      prevCtx?.clearRect(0, 0, canvasWidth, canvasHeight);
+    }
+
+    // Restore drawing canvas to last valid state
+    const drawCanvas = drawingCanvasRef.current;
+    if (drawCanvas) {
+      const ctx = drawCanvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        if (activeLayer?.dataUrl && activeLayer.visible) {
+          loadImage(activeLayer.dataUrl).then((img) => {
+            ctx.save();
+            ctx.globalAlpha = activeLayer.opacity;
+            ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+            ctx.restore();
+          }).catch(() => {});
+        }
+      }
+    }
+  }, [activeLayer?.dataUrl, activeLayer?.visible, activeLayer?.opacity, canvasWidth, canvasHeight]);
+
+  /**
+   * REAL TWO-FINGER PINCH ZOOM & PAN CALCULATION
+   * Preserves canvas point underneath pinch midpoint while zooming seamlessly.
+   */
+  const handlePinchZoom = useCallback(() => {
+    if (activePointersRef.current.size < 2) return;
+    const pointers = Array.from(activePointersRef.current.values());
+    const p1 = pointers[0];
+    const p2 = pointers[1];
+
+    const currentDist = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+    const currentMidX = (p1.clientX + p2.clientX) / 2;
+    const currentMidY = (p1.clientY + p2.clientY) / 2;
+
+    const { initialDistance, initialMidpoint, initialZoom, initialPan } = pinchStateRef.current;
+    if (initialDistance <= 0) return;
+
+    // 1. Calculate zoom scale ratio
+    const scale = currentDist / initialDistance;
+    const rawZoom = Math.round(initialZoom * scale);
+    const newZoom = Math.max(25, Math.min(1200, rawZoom));
+
+    // 2. Viewport container center
+    const container = workspaceContainerRef.current;
+    const containerRect = container?.getBoundingClientRect();
+    const cx = containerRect ? containerRect.left + containerRect.width / 2 : window.innerWidth / 2;
+    const cy = containerRect ? containerRect.top + containerRect.height / 2 : window.innerHeight / 2;
+
+    // 3. Zoom around midpoint and pan simultaneously
+    const zoomRatio = newZoom / initialZoom;
+    const newPanX = initialPan.x * zoomRatio + (currentMidX - cx) - (initialMidpoint.x - cx) * zoomRatio;
+    const newPanY = initialPan.y * zoomRatio + (currentMidY - cy) - (initialMidpoint.y - cy) * zoomRatio;
+
+    setZoom(newZoom);
+    setPanOffset({ x: Math.round(newPanX), y: Math.round(newPanY) });
+  }, [setZoom]);
+
+  /**
+   * PREVENT WHOLE-PAGE BROWSER ZOOM ON TRACKPAD / MOBILE MULTI-TOUCH
    */
   useEffect(() => {
     const container = workspaceContainerRef.current;
@@ -174,12 +239,67 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         const delta = Math.round(rawDelta * smoothFactor);
         const currentZoom = useStudioStore.getState().zoom;
         const nextZoom = Math.max(25, Math.min(1200, currentZoom + delta));
+        
+        // Zoom towards mouse cursor
+        const containerRect = container.getBoundingClientRect();
+        const cx = containerRect.left + containerRect.width / 2;
+        const cy = containerRect.top + containerRect.height / 2;
+        const zoomRatio = nextZoom / currentZoom;
+        
+        setPanOffset((prevPan) => ({
+          x: Math.round(prevPan.x * zoomRatio + (e.clientX - cx) * (1 - zoomRatio)),
+          y: Math.round(prevPan.y * zoomRatio + (e.clientY - cy) * (1 - zoomRatio)),
+        }));
+        
         useStudioStore.getState().setZoom(nextZoom);
       }
     };
 
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length >= 2) {
+        e.preventDefault();
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length >= 2) {
+        e.preventDefault();
+      }
+    };
+
+    const handleGesture = (e: Event) => {
+      e.preventDefault();
+    };
+
     container.addEventListener('wheel', handleWheelEvent, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheelEvent);
+    container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('gesturestart', handleGesture);
+    container.addEventListener('gesturechange', handleGesture);
+    container.addEventListener('gestureend', handleGesture);
+
+    // Global cleanup for lifted pointers
+    const handleGlobalPointerUp = (e: PointerEvent) => {
+      activePointersRef.current.delete(e.pointerId);
+      if (activePointersRef.current.size < 2 && pinchStateRef.current.isActive) {
+        pinchStateRef.current.isActive = false;
+        isDrawingRef.current = false;
+      }
+    };
+
+    window.addEventListener('pointerup', handleGlobalPointerUp);
+    window.addEventListener('pointercancel', handleGlobalPointerUp);
+
+    return () => {
+      container.removeEventListener('wheel', handleWheelEvent);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('gesturestart', handleGesture);
+      container.removeEventListener('gesturechange', handleGesture);
+      container.removeEventListener('gestureend', handleGesture);
+      window.removeEventListener('pointerup', handleGlobalPointerUp);
+      window.removeEventListener('pointercancel', handleGlobalPointerUp);
+    };
   }, []);
 
   // Coordinate mapper using getBoundingClientRect (matches zoom & panOffset seamlessly)
@@ -191,22 +311,11 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       const rect = canvas.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return null;
 
-      const isRotatedPortrait =
-        typeof window !== 'undefined' &&
-        window.innerHeight > window.innerWidth &&
-        window.innerWidth <= 1024;
+      const scaleX = canvasWidth / rect.width;
+      const scaleY = canvasHeight / rect.height;
 
-      let x = 0;
-      let y = 0;
-
-      if (isRotatedPortrait) {
-        // Rotated 90deg clockwise: screen Y is local X, screen -X is local Y
-        x = ((clientY - rect.top) / rect.height) * canvasWidth;
-        y = ((rect.right - clientX) / rect.width) * canvasHeight;
-      } else {
-        x = ((clientX - rect.left) / rect.width) * canvasWidth;
-        y = ((clientY - rect.top) / rect.height) * canvasHeight;
-      }
+      const x = (clientX - rect.left) * scaleX;
+      const y = (clientY - rect.top) * scaleY;
 
       return {
         x: Math.max(0, Math.min(canvasWidth, x)),
@@ -700,17 +809,8 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     if (!isTransformingRef.current || !selection) return;
     e.stopPropagation();
 
-    const isRotatedPortrait =
-      typeof window !== 'undefined' &&
-      window.innerHeight > window.innerWidth &&
-      window.innerWidth <= 1024;
-
-    const rawDx = ((e.clientX - transformStartRef.current.pointerX) / displayWidth) * canvasWidth;
-    const rawDy = ((e.clientY - transformStartRef.current.pointerY) / displayHeight) * canvasHeight;
-
-    const dx = isRotatedPortrait ? rawDy : rawDx;
-    const dy = isRotatedPortrait ? -rawDx : rawDy;
-
+    const dx = ((e.clientX - transformStartRef.current.pointerX) / displayWidth) * canvasWidth;
+    const dy = ((e.clientY - transformStartRef.current.pointerY) / displayHeight) * canvasHeight;
     const t = transformTypeRef.current;
     const s = transformStartRef.current;
 
@@ -835,17 +935,8 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     if (!isTransformingRefImageRef.current || !referenceImage) return;
     e.stopPropagation();
 
-    const isRotatedPortrait =
-      typeof window !== 'undefined' &&
-      window.innerHeight > window.innerWidth &&
-      window.innerWidth <= 1024;
-
-    const rawDx = ((e.clientX - refTransformStartRef.current.pointerX) / displayWidth) * canvasWidth;
-    const rawDy = ((e.clientY - refTransformStartRef.current.pointerY) / displayHeight) * canvasHeight;
-
-    const dx = isRotatedPortrait ? rawDy : rawDx;
-    const dy = isRotatedPortrait ? -rawDx : rawDy;
-
+    const dx = ((e.clientX - refTransformStartRef.current.pointerX) / displayWidth) * canvasWidth;
+    const dy = ((e.clientY - refTransformStartRef.current.pointerY) / displayHeight) * canvasHeight;
     const t = refTransformTypeRef.current;
     const s = refTransformStartRef.current;
 
@@ -925,134 +1016,39 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   };
 
   /**
-   * Helper: Cleanly abort and revert any in-progress stroke
-   */
-  const cancelActiveStroke = useCallback(() => {
-    if (!isDrawingRef.current) return;
-    isDrawingRef.current = false;
-    startPointRef.current = null;
-    lastPointRef.current = null;
-
-    const drawCanvas = drawingCanvasRef.current;
-    const previewCanvas = previewCanvasRef.current;
-    if (drawCanvas) {
-      const ctx = drawCanvas.getContext('2d');
-      if (ctx) {
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-        if (preStrokeDataUrlRef.current) {
-          const img = new Image();
-          img.src = preStrokeDataUrlRef.current;
-          img.onload = () => ctx.drawImage(img, 0, 0);
-        }
-      }
-    }
-    if (previewCanvas) {
-      const prevCtx = previewCanvas.getContext('2d');
-      prevCtx?.clearRect(0, 0, canvasWidth, canvasHeight);
-    }
-  }, [canvasWidth, canvasHeight]);
-
-  /**
-   * Helper: Initialize pinch gesture when 2 pointers become active
-   */
-  const startPinchGesture = useCallback(() => {
-    const pointers = Array.from(activePointersRef.current.values());
-    if (pointers.length < 2) return;
-    const [p1, p2] = pointers;
-    const dist = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY);
-    const mid = { x: (p1.clientX + p2.clientX) / 2, y: (p1.clientY + p2.clientY) / 2 };
-
-    pinchStartRef.current = {
-      distance: Math.max(dist, 1),
-      midpoint: mid,
-      zoom: useStudioStore.getState().zoom,
-      panOffset: { ...panOffsetRef.current },
-    };
-    isPinchZoomingRef.current = true;
-  }, []);
-
-  /**
-   * Helper: Calculate and apply zoom & pan translation centered on pinch midpoint
-   */
-  const updatePinchGesture = useCallback(() => {
-    const pointers = Array.from(activePointersRef.current.values());
-    if (pointers.length < 2) return;
-    const [p1, p2] = pointers;
-    const dist = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY);
-    const mid = { x: (p1.clientX + p2.clientX) / 2, y: (p1.clientY + p2.clientY) / 2 };
-
-    const { distance: d0, midpoint: mid0, zoom: z0, panOffset: startPan } = pinchStartRef.current;
-    if (d0 < 5) return;
-
-    const scale = dist / d0;
-    const targetZoom = Math.max(25, Math.min(1200, Math.round(z0 * scale)));
-
-    const container = workspaceContainerRef.current;
-    const rect = container
-      ? container.getBoundingClientRect()
-      : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-
-    const k = targetZoom / z0;
-    const vx = mid0.x - (cx + startPan.x);
-    const vy = mid0.y - (cy + startPan.y);
-
-    const newPanX = Math.round(mid.x - cx - vx * k);
-    const newPanY = Math.round(mid.y - cy - vy * k);
-
-    setPanOffset({ x: newPanX, y: newPanY });
-    panOffsetRef.current = { x: newPanX, y: newPanY };
-    setZoom(targetZoom);
-  }, [setZoom]);
-
-  /**
-   * Prevent native page gesture zoom on multi-touch
-   */
-  useEffect(() => {
-    const container = workspaceContainerRef.current;
-    if (!container) return;
-
-    const preventDefaultMultiTouch = (e: TouchEvent) => {
-      if (e.touches.length >= 2 || (e.cancelable && e.type === 'touchmove')) {
-        e.preventDefault();
-      }
-    };
-
-    container.addEventListener('touchstart', preventDefaultMultiTouch, { passive: false });
-    container.addEventListener('touchmove', preventDefaultMultiTouch, { passive: false });
-    container.addEventListener('touchend', preventDefaultMultiTouch, { passive: false });
-    container.addEventListener('touchcancel', preventDefaultMultiTouch, { passive: false });
-
-    return () => {
-      container.removeEventListener('touchstart', preventDefaultMultiTouch);
-      container.removeEventListener('touchmove', preventDefaultMultiTouch);
-      container.removeEventListener('touchend', preventDefaultMultiTouch);
-      container.removeEventListener('touchcancel', preventDefaultMultiTouch);
-    };
-  }, []);
-
-  /**
-   * Robust Everywhere Hand Panning & Workspace Multi-Touch
+   * Robust Everywhere Hand Panning & Multi-Touch Gesture Detection
    */
   const handleWorkspacePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isPlaying) return;
+
+    // Track active pointer
     activePointersRef.current.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
 
-    // Multi-touch: 2+ pointers initiate pinch zoom
+    // Multi-touch pinch zoom / pan trigger (2+ fingers)
     if (activePointersRef.current.size >= 2) {
-      cancelActiveStroke();
+      cancelActiveDrawingStroke();
       isPanningRef.current = false;
+      const pointers = Array.from(activePointersRef.current.values());
+      const p1 = pointers[0];
+      const p2 = pointers[1];
+      const dist = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+      const midX = (p1.clientX + p2.clientX) / 2;
+      const midY = (p1.clientY + p2.clientY) / 2;
+
+      pinchStateRef.current = {
+        isActive: true,
+        initialDistance: Math.max(dist, 5),
+        initialMidpoint: { x: midX, y: midY },
+        initialZoom: useStudioStore.getState().zoom,
+        initialPan: { x: panOffset.x, y: panOffset.y },
+      };
       try {
         if (e.currentTarget.hasPointerCapture(e.pointerId)) {
           e.currentTarget.releasePointerCapture(e.pointerId);
         }
       } catch {}
-      startPinchGesture();
       return;
     }
-
-    if (ignoreSingleTouchUntilLiftRef.current) return;
 
     const isPanTrigger = activeTool === 'hand' || isPanMode || isSpacePressedRef.current || e.button === 1;
     if (isPanTrigger) {
@@ -1061,8 +1057,8 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       panStartRef.current = {
         clientX: e.clientX,
         clientY: e.clientY,
-        originX: panOffsetRef.current.x,
-        originY: panOffsetRef.current.y,
+        originX: panOffset.x,
+        originY: panOffset.y,
       };
       try {
         e.currentTarget.setPointerCapture(e.pointerId);
@@ -1071,60 +1067,32 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   };
 
   const handleWorkspacePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    activePointersRef.current.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+    if (activePointersRef.current.has(e.pointerId)) {
+      activePointersRef.current.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+    }
 
+    // 2-Finger Pinch Zoom / Pan
     if (activePointersRef.current.size >= 2) {
-      if (!isPinchZoomingRef.current) {
-        cancelActiveStroke();
-        startPinchGesture();
-      } else {
-        updatePinchGesture();
-      }
+      handlePinchZoom();
       return;
     }
 
-    if (isPinchZoomingRef.current || ignoreSingleTouchUntilLiftRef.current) return;
-
     if (isPanningRef.current) {
-      const isRotatedPortrait =
-        typeof window !== 'undefined' &&
-        window.innerHeight > window.innerWidth &&
-        window.innerWidth <= 1024;
-
-      const rawDx = e.clientX - panStartRef.current.clientX;
-      const rawDy = e.clientY - panStartRef.current.clientY;
-
-      const dx = isRotatedPortrait ? rawDy : rawDx;
-      const dy = isRotatedPortrait ? -rawDx : rawDy;
-
-      const newX = panStartRef.current.originX + dx;
-      const newY = panStartRef.current.originY + dy;
-      setPanOffset({ x: newX, y: newY });
-      panOffsetRef.current = { x: newX, y: newY };
+      const dx = e.clientX - panStartRef.current.clientX;
+      const dy = e.clientY - panStartRef.current.clientY;
+      setPanOffset({
+        x: panStartRef.current.originX + dx,
+        y: panStartRef.current.originY + dy,
+      });
     }
   };
 
   const handleWorkspacePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     activePointersRef.current.delete(e.pointerId);
 
-    if (isPinchZoomingRef.current) {
-      if (activePointersRef.current.size < 2) {
-        isPinchZoomingRef.current = false;
-        ignoreSingleTouchUntilLiftRef.current = true;
-      }
-      if (activePointersRef.current.size === 0) {
-        ignoreSingleTouchUntilLiftRef.current = false;
-      }
-      try {
-        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-          e.currentTarget.releasePointerCapture(e.pointerId);
-        }
-      } catch {}
-      return;
-    }
-
-    if (activePointersRef.current.size === 0) {
-      ignoreSingleTouchUntilLiftRef.current = false;
+    if (activePointersRef.current.size < 2 && pinchStateRef.current.isActive) {
+      pinchStateRef.current.isActive = false;
+      isDrawingRef.current = false;
     }
 
     if (isPanningRef.current) {
@@ -1138,27 +1106,39 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   };
 
   /**
-   * Primary Canvas Gesture Handlers (Drawing, Panning & Multi-Touch Pinch Zoom)
+   * Primary Canvas Gesture & Drawing Handlers
    */
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (isPlaying) return;
 
+    // Track pointer
     activePointersRef.current.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
 
-    // Multi-touch: 2+ active touches trigger Pinch Zoom & Pan, NEVER drawing
+    // Multi-touch pinch zoom / pan trigger (2+ fingers)
     if (activePointersRef.current.size >= 2) {
-      cancelActiveStroke();
+      cancelActiveDrawingStroke();
       isPanningRef.current = false;
+      const pointers = Array.from(activePointersRef.current.values());
+      const p1 = pointers[0];
+      const p2 = pointers[1];
+      const dist = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+      const midX = (p1.clientX + p2.clientX) / 2;
+      const midY = (p1.clientY + p2.clientY) / 2;
+
+      pinchStateRef.current = {
+        isActive: true,
+        initialDistance: Math.max(dist, 5),
+        initialMidpoint: { x: midX, y: midY },
+        initialZoom: useStudioStore.getState().zoom,
+        initialPan: { x: panOffset.x, y: panOffset.y },
+      };
       try {
         if (e.currentTarget.hasPointerCapture(e.pointerId)) {
           e.currentTarget.releasePointerCapture(e.pointerId);
         }
       } catch {}
-      startPinchGesture();
       return;
     }
-
-    if (ignoreSingleTouchUntilLiftRef.current) return;
 
     // Pan Mode Trigger
     if (isSpacePressedRef.current || e.button === 1 || activeTool === 'hand' || isPanMode) {
@@ -1167,8 +1147,8 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       panStartRef.current = {
         clientX: e.clientX,
         clientY: e.clientY,
-        originX: panOffsetRef.current.x,
-        originY: panOffsetRef.current.y,
+        originX: panOffset.x,
+        originY: panOffset.y,
       };
       try {
         e.currentTarget.setPointerCapture(e.pointerId);
@@ -1189,14 +1169,13 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
 
     e.preventDefault();
     try {
-      e.currentTarget.setPointerCapture(e.pointerId);
+      if (activePointersRef.current.size === 1) {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }
     } catch {}
 
     const pt = getCanvasCoordinates(e.clientX, e.clientY);
     if (!pt) return;
-
-    // Snapshot current layer state for safe multi-touch stroke aborting
-    preStrokeDataUrlRef.current = activeLayer?.dataUrl || null;
 
     isDrawingRef.current = true;
     startPointRef.current = pt;
@@ -1252,37 +1231,23 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    activePointersRef.current.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+    if (activePointersRef.current.has(e.pointerId)) {
+      activePointersRef.current.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+    }
 
-    // Multi-touch pinch zoom & pan handling
+    // 2-Finger Pinch Zoom / Pan
     if (activePointersRef.current.size >= 2) {
-      if (!isPinchZoomingRef.current) {
-        cancelActiveStroke();
-        startPinchGesture();
-      } else {
-        updatePinchGesture();
-      }
+      handlePinchZoom();
       return;
     }
 
-    if (isPinchZoomingRef.current || ignoreSingleTouchUntilLiftRef.current) return;
-
     if (isPanningRef.current) {
-      const isRotatedPortrait =
-        typeof window !== 'undefined' &&
-        window.innerHeight > window.innerWidth &&
-        window.innerWidth <= 1024;
-
-      const rawDx = e.clientX - panStartRef.current.clientX;
-      const rawDy = e.clientY - panStartRef.current.clientY;
-
-      const dx = isRotatedPortrait ? rawDy : rawDx;
-      const dy = isRotatedPortrait ? -rawDx : rawDy;
-
-      const newX = panStartRef.current.originX + dx;
-      const newY = panStartRef.current.originY + dy;
-      setPanOffset({ x: newX, y: newY });
-      panOffsetRef.current = { x: newX, y: newY };
+      const dx = e.clientX - panStartRef.current.clientX;
+      const dy = e.clientY - panStartRef.current.clientY;
+      setPanOffset({
+        x: panStartRef.current.originX + dx,
+        y: panStartRef.current.originY + dy,
+      });
       return;
     }
 
@@ -1391,33 +1356,19 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const handlePointerUpOrCancel = (e: React.PointerEvent<HTMLCanvasElement>) => {
     activePointersRef.current.delete(e.pointerId);
 
-    if (isPinchZoomingRef.current) {
+    // If coming out of a pinch gesture, reset cleanly
+    if (pinchStateRef.current.isActive) {
       if (activePointersRef.current.size < 2) {
-        isPinchZoomingRef.current = false;
-        ignoreSingleTouchUntilLiftRef.current = true;
+        pinchStateRef.current.isActive = false;
+        isDrawingRef.current = false;
+        startPointRef.current = null;
+        lastPointRef.current = null;
       }
-      if (activePointersRef.current.size === 0) {
-        ignoreSingleTouchUntilLiftRef.current = false;
-      }
-      try {
-        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-          e.currentTarget.releasePointerCapture(e.pointerId);
-        }
-      } catch {}
       return;
-    }
-
-    if (activePointersRef.current.size === 0) {
-      ignoreSingleTouchUntilLiftRef.current = false;
     }
 
     if (isPanningRef.current) {
       isPanningRef.current = false;
-      try {
-        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-          e.currentTarget.releasePointerCapture(e.pointerId);
-        }
-      } catch {}
       return;
     }
 
@@ -1496,7 +1447,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const handleFitToScreen = () => {
     setZoom(100);
     setPanOffset({ x: 0, y: 0 });
-    panOffsetRef.current = { x: 0, y: 0 };
   };
 
   const isPanActive = isPanMode || activeTool === 'hand' || isSpacePressedRef.current;

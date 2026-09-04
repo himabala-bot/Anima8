@@ -39,8 +39,6 @@ import {
   CloudOff,
   User,
   Trash2,
-  Smartphone,
-  RotateCw,
 } from 'lucide-react';
 import { syncEngine, CloudSyncState } from '../lib/sync/syncQueue';
 import { useAuthStore } from '../store/useAuthStore';
@@ -116,44 +114,6 @@ export default function Anim8App() {
   const prevFrame = useStudioStore((state) => state.prevFrame);
   const setIsPlaying = useStudioStore((state) => state.setIsPlaying);
   const saveToStorage = useStudioStore((state) => state.saveToStorage);
-
-  // Orientation & Device Detection for Entire Application
-  const [isPortrait, setIsPortrait] = useState<boolean>(false);
-  const [isMobileOrTablet, setIsMobileOrTablet] = useState<boolean>(false);
-
-  useEffect(() => {
-    const checkOrientation = () => {
-      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      const isNarrow = window.innerWidth <= 1024;
-      setIsMobileOrTablet(isTouch || isNarrow);
-      setIsPortrait(window.innerHeight > window.innerWidth);
-    };
-
-    checkOrientation();
-    window.addEventListener('resize', checkOrientation);
-    window.addEventListener('orientationchange', checkOrientation);
-    return () => {
-      window.removeEventListener('resize', checkOrientation);
-      window.removeEventListener('orientationchange', checkOrientation);
-    };
-  }, []);
-
-  const requestLandscape = async () => {
-    try {
-      if (screen.orientation && 'lock' in screen.orientation) {
-        // @ts-expect-error Screen Orientation API lock
-        await screen.orientation.lock('landscape');
-      } else if (document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen();
-        if (screen.orientation && 'lock' in screen.orientation) {
-          // @ts-expect-error Screen Orientation API lock
-          await screen.orientation.lock('landscape');
-        }
-      }
-    } catch {
-      // Fallback: silently ignored if unsupported
-    }
-  };
 
   // Close popovers on click outside
   useEffect(() => {
@@ -285,15 +245,15 @@ export default function Anim8App() {
   return (
     <main className="fixed inset-0 flex flex-col h-screen w-screen overflow-hidden bg-[#F7F7FA] text-[#18181B] select-none font-sans">
       {/* 1. TOP HEADER */}
-      <header className="flex-shrink-0 h-10 sm:h-14 flex items-center justify-between px-2 sm:px-5 bg-white border-b border-[#E5E5EA] shadow-xs z-30">
+      <header className="flex-shrink-0 h-14 flex items-center justify-between px-3 md:px-5 bg-white border-b border-[#E5E5EA] shadow-xs z-30">
         {/* Brand & Back to Home */}
-        <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
           <button
             onClick={() => navigate('/')}
             title="Return to Home / Projects"
-            className="flex items-center gap-1 px-2 py-1 rounded-lg sm:rounded-xl hover:bg-[#F1F1F5] text-[11px] sm:text-xs font-bold text-[#18181B] transition-colors flex-shrink-0"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-[#F1F1F5] text-xs font-bold text-[#18181B] transition-colors flex-shrink-0"
           >
-            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black" />
+            <ArrowLeft className="w-4 h-4 text-black" />
             <div className="flex items-center gap-1">
               <span className="font-extrabold tracking-tight">Anim8</span>
             </div>
@@ -654,18 +614,18 @@ export default function Anim8App() {
           {/* Primary Action: Export Video/GIF Modal */}
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-1 sm:py-2 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold bg-black hover:bg-zinc-800 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center gap-1.5 md:gap-2 px-3.5 md:px-4 py-1.5 md:py-2 rounded-2xl text-xs font-bold bg-black hover:bg-zinc-800 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Film className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <Film className="w-4 h-4" />
             <span>Export</span>
           </button>
         </div>
       </header>
 
-      {/* 2. MAIN WORKSPACE (Landscape-First Studio) */}
-      <div className="flex-1 flex flex-row min-h-0 min-w-0 overflow-hidden relative">
-        {/* Left Toolbar Rail (Compact 2-column dock, always on left for landscape animation studio workflow) */}
-        <div className="flex flex-shrink-0 px-1 sm:px-3 py-0.5 sm:py-2 items-center justify-center max-h-full min-h-0 z-20">
+      {/* 2. MAIN WORKSPACE */}
+      <div className="flex-1 flex flex-col md:flex-row min-h-0 min-w-0 overflow-hidden relative">
+        {/* Left Toolbar Rail (2-column compact) */}
+        <div className="hidden md:flex flex-shrink-0 px-3 py-2 items-center justify-center max-h-full min-h-0 z-20">
           <Toolbar />
         </div>
 
@@ -683,8 +643,13 @@ export default function Anim8App() {
       </div>
 
       {/* 3. TIMELINE */}
-      <div className="flex-shrink-0 px-1 sm:px-4 pb-1 sm:pb-2 z-20">
+      <div className="flex-shrink-0 px-2 md:px-4 pb-2 z-20">
         <Timeline onOpenAudioModal={() => setIsAudioModalOpen(true)} />
+      </div>
+
+      {/* 4. MOBILE BOTTOM TOOLBAR DOCK */}
+      <div className="flex md:hidden flex-shrink-0 px-2 pb-2 pt-0 z-20">
+        <Toolbar className="w-full" />
       </div>
 
       {/* Modals & Dialogs */}
