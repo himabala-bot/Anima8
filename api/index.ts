@@ -85,6 +85,13 @@ export default async function handler(req: any, res: any) {
         ? req.query.path.join('/')
         : req.query.path;
       url = `/api/${pathSegment}`;
+    } else if (req.query?.slug) {
+      const pathSegment = Array.isArray(req.query.slug)
+        ? req.query.slug.join('/')
+        : req.query.slug;
+      url = `/api/${pathSegment}`;
+    } else if (!url.startsWith('/api')) {
+      url = `/api${url.startsWith('/') ? '' : '/'}${url}`;
     }
 
     const method = req.method || 'GET';
