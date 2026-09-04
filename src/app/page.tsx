@@ -36,13 +36,24 @@ import {
   Loader2,
   ArrowLeft,
   Trash2,
+  Cloud,
+  CloudOff,
 } from 'lucide-react';
+import { syncEngine, CloudSyncState } from '../lib/sync/syncQueue';
 
 export default function Anim8App() {
   const { path, projectId: routeProjectId, navigate } = useRouter();
 
   const isEditorRoute = path.startsWith('/editor/');
   const currentProjectId = useStudioStore((state) => state.projectId);
+  const [cloudSyncState, setCloudSyncState] = useState<CloudSyncState>('idle');
+
+  useEffect(() => {
+    const unsub = syncEngine.subscribe((state) => {
+      setCloudSyncState(state);
+    });
+    return unsub;
+  }, []);
   const loadProjectById = useStudioStore((state) => state.loadProjectById);
 
   // When route is /editor/:id, load project into store if needed
@@ -275,17 +286,22 @@ export default function Anim8App() {
               </button>
             )}
 
-            {/* Autosave Status Badge */}
+            {/* Autosave & Cloud Sync Status Badge */}
             <div className="flex items-center gap-1 text-[10px] text-[#71717A] font-medium">
-              {saveStatus === 'saving' ? (
+              {saveStatus === 'saving' || cloudSyncState === 'syncing' ? (
                 <span className="flex items-center gap-1 text-purple-600">
                   <Loader2 className="w-3 h-3 animate-spin" />
-                  <span>Saving...</span>
+                  <span>{saveStatus === 'saving' ? 'Saving...' : 'Syncing...'}</span>
+                </span>
+              ) : cloudSyncState === 'offline' ? (
+                <span className="flex items-center gap-1 text-zinc-500" title="Working offline - changes saved locally in IndexedDB">
+                  <CloudOff className="w-3 h-3 text-zinc-400" />
+                  <span>Saved (Offline)</span>
                 </span>
               ) : (
-                <span className="flex items-center gap-1 text-emerald-600">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>Saved</span>
+                <span className="flex items-center gap-1 text-emerald-600" title="Synchronized with Neon Cloud">
+                  <Cloud className="w-3 h-3" />
+                  <span>Cloud Synced</span>
                 </span>
               )}
             </div>

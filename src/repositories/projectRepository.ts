@@ -1,6 +1,6 @@
 /**
  * Backend-Agnostic Project Data Layer for Anim8 Studio
- * Designed for seamless transition from Local IndexedDB to Supabase + PostgreSQL
+ * Local-First + Neon PostgreSQL Cloud Synchronized Architecture
  */
 
 import {
@@ -10,6 +10,7 @@ import {
   deleteProjectFromDB,
   ProjectRecord,
 } from '../utils/indexedDB';
+import { syncEngine } from '../lib/sync/syncQueue';
 
 export interface StrokePoint {
   x: number;
@@ -50,7 +51,7 @@ export interface IProjectRepository {
 }
 
 /**
- * Local IndexedDB Implementation
+ * Local-First IndexedDB Repository with Background Sync Queue Dispatch
  */
 export class LocalProjectRepository implements IProjectRepository {
   async getAllProjects(): Promise<ProjectRecord[]> {
@@ -62,7 +63,17 @@ export class LocalProjectRepository implements IProjectRepository {
   }
 
   async saveProject(project: ProjectRecord): Promise<void> {
-    await saveProjectToDB(project);
+    const updated = { ...project, updatedAt: Date.now() };
+    await saveProjectToDB(updated);
+
+    // Enqueue cloud sync in background (non-blocking)
+    syncEngine.enqueue(
+      'UPDATE_PROJECT',
+      'project',
+      project.id,
+      project.id,
+      updated
+    );
   }
 
   async saveStroke(
@@ -77,10 +88,19 @@ export class LocalProjectRepository implements IProjectRepository {
 
     // Fast-path stroke update in local storage
     await saveProjectToDB(proj);
+
+    syncEngine.enqueue(
+      'SAVE_STROKE',
+      'stroke',
+      layerId,
+      projectId,
+      { frameId, layerId, updatedAt: Date.now() }
+    );
   }
 
   async deleteProject(id: string): Promise<void> {
     await deleteProjectFromDB(id);
+    syncEngine.enqueue('DELETE_PROJECT', 'project', id, id, { id });
   }
 
   async duplicateProject(id: string): Promise<ProjectRecord> {
@@ -98,6 +118,15 @@ export class LocalProjectRepository implements IProjectRepository {
     };
 
     await saveProjectToDB(duplicated);
+
+    syncEngine.enqueue(
+      'CREATE_PROJECT',
+      'project',
+      duplicated.id,
+      duplicated.id,
+      duplicated
+    );
+
     return duplicated;
   }
 
@@ -137,9 +166,73 @@ export class LocalProjectRepository implements IProjectRepository {
     };
 
     await saveProjectToDB(newProject);
+
+    syncEngine.enqueue(
+      'CREATE_PROJECT',
+      'project',
+      newProject.id,
+      newProject.id,
+      newProject
+    );
+
     return newProject;
   }
 }
 
-// Singleton repository instance (Easily swappable with SupabaseProjectRepository in future)
-export const projectRepository: IProjectRepository = new LocalProjectRepository();
+/**
+ * Hybrid Repository:
+ * Serves projects immediately from IndexedDB for zero latency & offline resilience,
+ * and fetches missing cloud projects from Neon PostgreSQL when online.
+ */
+export class HybridProjectRepository extends LocalProjectRepository {
+  override async getProjectById(id: string): Promise<ProjectRecord | null> {
+    // 1. Check local IndexedDB first
+    const local = await super.getProjectById(id);
+    if (local) return local;
+
+    // 2. If not found locally and online, fetch from Neon cloud API
+    if (typeof window !== 'undefined' && navigator.onLine) {
+      try {
+        const res = await fetch(`/api/projects/${id}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.project) {
+            const reconstructed: ProjectRecord = {
+              id: json.project.id,
+              name: json.project.title,
+              canvasWidth: json.project.width,
+              canvasHeight: json.project.height,
+              canvasBgColor: json.project.backgroundValue || '#ffffff',
+              fps: json.project.fps,
+              frames: (json.frames || []).map((f: any) => ({
+                id: f.id,
+                exposure: f.exposure,
+                layers: (json.layers || [])
+                  .filter((l: any) => l.frameId === f.id)
+                  .map((l: any) => ({
+                    id: l.id,
+                    name: l.name,
+                    visible: l.visible,
+                    locked: l.locked,
+                    opacity: l.opacity,
+                    dataUrl: null,
+                  })),
+              })),
+              createdAt: new Date(json.project.createdAt).getTime(),
+              updatedAt: new Date(json.project.updatedAt).getTime(),
+            };
+            await saveProjectToDB(reconstructed);
+            return reconstructed;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load project from Neon cloud:', e);
+      }
+    }
+
+    return null;
+  }
+}
+
+// Singleton repository instance
+export const projectRepository: IProjectRepository = new HybridProjectRepository();
