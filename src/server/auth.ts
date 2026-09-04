@@ -8,7 +8,9 @@ import jwt from 'jsonwebtoken';
 import { db, schema } from '../lib/db';
 import { eq, and } from 'drizzle-orm';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'anim8_production_secret_key_change_in_env';
+function getJwtSecret(): string {
+  return process.env.JWT_SECRET || 'anim8_production_secret_key_change_in_env';
+}
 
 export interface AuthUserPayload {
   userId: string;
@@ -26,12 +28,12 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 export function signToken(payload: AuthUserPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: '30d' });
 }
 
 export function verifyToken(token: string): AuthUserPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as AuthUserPayload;
+    return jwt.verify(token, getJwtSecret()) as AuthUserPayload;
   } catch {
     return null;
   }

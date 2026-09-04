@@ -1,1 +1,3 @@
-export { default } from './index';
+import handler from './index';
+
+export default handler;
