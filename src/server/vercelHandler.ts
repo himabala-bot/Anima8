@@ -1,4 +1,4 @@
-import { handleApiRequest } from '../src/server/api';
+import { handleApiRequest } from './api';
 
 // Safe body parser for Vercel Node runtime
 async function parseBody(req: any): Promise<any> {

@@ -18966,7 +18966,7 @@ async function handleApiRequest(url, method, body, headers) {
   }
 }
 
-// api/index.ts
+// src/server/vercelHandler.ts
 async function parseBody(req) {
   if (req.body !== void 0 && req.body !== null) {
     if (typeof req.body === "string") {
