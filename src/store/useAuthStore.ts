@@ -84,10 +84,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      let data: any = {};
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        data = await res.json().catch(() => ({}));
+      } else {
+        const text = await res.text().catch(() => '');
+        data = { error: text || `Server error (HTTP ${res.status})` };
+      }
+
       if (!res.ok) {
-        set({ error: data.error || 'Login failed', isLoading: false });
-        return { success: false, error: data.error || 'Login failed' };
+        const errMsg = data.error || `Login failed (HTTP ${res.status})`;
+        set({ error: errMsg, isLoading: false });
+        return { success: false, error: errMsg };
       }
 
       await saveAuthSessionToDB({
@@ -108,8 +117,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       return { success: true };
     } catch (err: any) {
-      set({ error: err?.message || 'Network error during login', isLoading: false });
-      return { success: false, error: err?.message || 'Network error' };
+      const errMsg = err?.message || 'Network error during login';
+      set({ error: errMsg, isLoading: false });
+      return { success: false, error: errMsg };
     }
   },
 
@@ -122,10 +132,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         body: JSON.stringify({ email, password, displayName }),
       });
 
-      const data = await res.json();
+      let data: any = {};
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        data = await res.json().catch(() => ({}));
+      } else {
+        const text = await res.text().catch(() => '');
+        data = { error: text || `Server error (HTTP ${res.status})` };
+      }
+
       if (!res.ok) {
-        set({ error: data.error || 'Sign up failed', isLoading: false });
-        return { success: false, error: data.error || 'Sign up failed' };
+        const errMsg = data.error || `Sign up failed (HTTP ${res.status})`;
+        set({ error: errMsg, isLoading: false });
+        return { success: false, error: errMsg };
       }
 
       await saveAuthSessionToDB({
@@ -146,8 +165,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       return { success: true };
     } catch (err: any) {
-      set({ error: err?.message || 'Network error during signup', isLoading: false });
-      return { success: false, error: err?.message || 'Network error' };
+      const errMsg = err?.message || 'Network error during signup';
+      set({ error: errMsg, isLoading: false });
+      return { success: false, error: errMsg };
     }
   },
 
