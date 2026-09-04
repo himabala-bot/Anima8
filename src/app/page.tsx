@@ -46,6 +46,38 @@ import { syncEngine, CloudSyncState } from '../lib/sync/syncQueue';
 import { useAuthStore } from '../store/useAuthStore';
 import { AuthModal } from '../components/AuthModal';
 
+// Global Mandatory Landscape Overlay
+const RotateToLandscapeOverlay: React.FC<{ onRequestLandscape: () => void }> = ({ onRequestLandscape }) => (
+  <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/95 backdrop-blur-xl p-6 text-white text-center select-none">
+    <div className="max-w-sm flex flex-col items-center gap-5 bg-zinc-900/95 border border-zinc-700/80 p-7 rounded-3xl shadow-2xl">
+      <div className="relative w-20 h-20 flex items-center justify-center bg-zinc-800/90 rounded-2xl border border-zinc-700 shadow-inner">
+        <Smartphone className="w-11 h-11 text-purple-400 rotate-90 transition-transform duration-700" />
+        <RotateCw
+          className="w-6 h-6 text-cyan-400 absolute -top-1.5 -right-1.5 animate-spin"
+          style={{ animationDuration: '4s' }}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <h2 className="text-lg font-black tracking-tight text-white">
+          Rotate Device to Landscape
+        </h2>
+        <p className="text-xs text-zinc-400 leading-relaxed font-medium">
+          Anima8 requires a landscape orientation across the entire application for the animation workspace, timeline, and projects studio. Please turn your device sideways.
+        </p>
+      </div>
+
+      <button
+        onClick={onRequestLandscape}
+        className="w-full py-3 px-5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-600/40 transition-all active:scale-95 flex items-center justify-center gap-2"
+      >
+        <RotateCw className="w-4 h-4" />
+        <span>Rotate to Landscape</span>
+      </button>
+    </div>
+  </div>
+);
+
 export default function Anim8App() {
   const { path, projectId: routeProjectId, navigate } = useRouter();
 
@@ -117,10 +149,9 @@ export default function Anim8App() {
   const setIsPlaying = useStudioStore((state) => state.setIsPlaying);
   const saveToStorage = useStudioStore((state) => state.saveToStorage);
 
-  // Orientation & Device Detection for Landscape-First Mobile Studio
+  // Orientation & Device Detection for Entire Application
   const [isPortrait, setIsPortrait] = useState<boolean>(false);
   const [isMobileOrTablet, setIsMobileOrTablet] = useState<boolean>(false);
-  const [hasDismissedRotatePrompt, setHasDismissedRotatePrompt] = useState<boolean>(false);
 
   useEffect(() => {
     const checkOrientation = () => {
@@ -276,15 +307,24 @@ export default function Anim8App() {
   // 1. DEFAULT ENTRY ROUTE: HOME PAGE / PROJECT HUB
   if (!isEditorRoute) {
     return (
-      <HomePage
-        onOpenProject={(projectId) => navigate(`/editor/${projectId}`)}
-      />
+      <>
+        {isMobileOrTablet && isPortrait && (
+          <RotateToLandscapeOverlay onRequestLandscape={requestLandscape} />
+        )}
+        <HomePage
+          onOpenProject={(projectId) => navigate(`/editor/${projectId}`)}
+        />
+      </>
     );
   }
 
   // 2. ANIMATION STUDIO EDITOR ROUTE (/editor/[projectId])
   return (
-    <main className="fixed inset-0 flex flex-col h-screen w-screen overflow-hidden bg-[#F7F7FA] text-[#18181B] select-none font-sans">
+    <>
+      {isMobileOrTablet && isPortrait && (
+        <RotateToLandscapeOverlay onRequestLandscape={requestLandscape} />
+      )}
+      <main className="fixed inset-0 flex flex-col h-screen w-screen overflow-hidden bg-[#F7F7FA] text-[#18181B] select-none font-sans">
       {/* 1. TOP HEADER */}
       <header className="flex-shrink-0 h-14 flex items-center justify-between px-3 md:px-5 bg-white border-b border-[#E5E5EA] shadow-xs z-30">
         {/* Brand & Back to Home */}
@@ -688,42 +728,6 @@ export default function Anim8App() {
         <Timeline onOpenAudioModal={() => setIsAudioModalOpen(true)} />
       </div>
 
-      {/* 4. LANDSCAPE PROMPT / OVERLAY (When on Mobile Portrait) */}
-      {isMobileOrTablet && isPortrait && !hasDismissedRotatePrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-6 text-white text-center">
-          <div className="max-w-xs flex flex-col items-center gap-4 bg-zinc-900/90 border border-zinc-700/80 p-6 rounded-3xl shadow-2xl">
-            <div className="relative w-16 h-16 flex items-center justify-center bg-zinc-800/80 rounded-2xl border border-zinc-700">
-              <Smartphone className="w-9 h-9 text-purple-400 rotate-90 transition-transform duration-700" />
-              <RotateCw className="w-5 h-5 text-cyan-400 absolute -top-1 -right-1 animate-spin" style={{ animationDuration: '4s' }} />
-            </div>
-            
-            <div className="space-y-1.5">
-              <h2 className="text-base font-extrabold tracking-tight text-zinc-100">
-                Rotate for Studio View
-              </h2>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Anima8 is designed for landscape drawing, timeline control, and multi-touch gestures.
-              </p>
-            </div>
-
-            <div className="flex flex-col w-full gap-2 pt-2">
-              <button
-                onClick={requestLandscape}
-                className="w-full py-2.5 px-4 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-600/30 transition-transform active:scale-95"
-              >
-                Switch to Landscape
-              </button>
-              <button
-                onClick={() => setHasDismissedRotatePrompt(true)}
-                className="w-full py-2 px-4 text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-colors"
-              >
-                Continue in Portrait
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Modals & Dialogs */}
       <ExportModal
         isOpen={isExportModalOpen}
@@ -760,5 +764,6 @@ export default function Anim8App() {
         onClose={() => setIsAuthModalOpen(false)}
       />
     </main>
+    </>
   );
 }
