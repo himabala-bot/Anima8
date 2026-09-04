@@ -243,7 +243,7 @@ export default function Anim8App() {
 
   // 2. ANIMATION STUDIO EDITOR ROUTE (/editor/[projectId])
   return (
-    <main className="flex flex-col h-screen w-screen overflow-hidden bg-[#F7F7FA] text-[#18181B] select-none font-sans">
+    <main className="fixed inset-0 flex flex-col h-screen w-screen overflow-hidden bg-[#F7F7FA] text-[#18181B] select-none font-sans">
       {/* 1. TOP HEADER */}
       <header className="flex-shrink-0 h-14 flex items-center justify-between px-3 md:px-5 bg-white border-b border-[#E5E5EA] shadow-xs z-30">
         {/* Brand & Back to Home */}
