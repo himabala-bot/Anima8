@@ -191,11 +191,22 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       const rect = canvas.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return null;
 
-      const scaleX = canvasWidth / rect.width;
-      const scaleY = canvasHeight / rect.height;
+      const isRotatedPortrait =
+        typeof window !== 'undefined' &&
+        window.innerHeight > window.innerWidth &&
+        window.innerWidth <= 1024;
 
-      const x = (clientX - rect.left) * scaleX;
-      const y = (clientY - rect.top) * scaleY;
+      let x = 0;
+      let y = 0;
+
+      if (isRotatedPortrait) {
+        // Rotated 90deg clockwise: screen Y is local X, screen -X is local Y
+        x = ((clientY - rect.top) / rect.height) * canvasWidth;
+        y = ((rect.right - clientX) / rect.width) * canvasHeight;
+      } else {
+        x = ((clientX - rect.left) / rect.width) * canvasWidth;
+        y = ((clientY - rect.top) / rect.height) * canvasHeight;
+      }
 
       return {
         x: Math.max(0, Math.min(canvasWidth, x)),
@@ -689,8 +700,17 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     if (!isTransformingRef.current || !selection) return;
     e.stopPropagation();
 
-    const dx = ((e.clientX - transformStartRef.current.pointerX) / displayWidth) * canvasWidth;
-    const dy = ((e.clientY - transformStartRef.current.pointerY) / displayHeight) * canvasHeight;
+    const isRotatedPortrait =
+      typeof window !== 'undefined' &&
+      window.innerHeight > window.innerWidth &&
+      window.innerWidth <= 1024;
+
+    const rawDx = ((e.clientX - transformStartRef.current.pointerX) / displayWidth) * canvasWidth;
+    const rawDy = ((e.clientY - transformStartRef.current.pointerY) / displayHeight) * canvasHeight;
+
+    const dx = isRotatedPortrait ? rawDy : rawDx;
+    const dy = isRotatedPortrait ? -rawDx : rawDy;
+
     const t = transformTypeRef.current;
     const s = transformStartRef.current;
 
@@ -815,8 +835,17 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     if (!isTransformingRefImageRef.current || !referenceImage) return;
     e.stopPropagation();
 
-    const dx = ((e.clientX - refTransformStartRef.current.pointerX) / displayWidth) * canvasWidth;
-    const dy = ((e.clientY - refTransformStartRef.current.pointerY) / displayHeight) * canvasHeight;
+    const isRotatedPortrait =
+      typeof window !== 'undefined' &&
+      window.innerHeight > window.innerWidth &&
+      window.innerWidth <= 1024;
+
+    const rawDx = ((e.clientX - refTransformStartRef.current.pointerX) / displayWidth) * canvasWidth;
+    const rawDy = ((e.clientY - refTransformStartRef.current.pointerY) / displayHeight) * canvasHeight;
+
+    const dx = isRotatedPortrait ? rawDy : rawDx;
+    const dy = isRotatedPortrait ? -rawDx : rawDy;
+
     const t = refTransformTypeRef.current;
     const s = refTransformStartRef.current;
 
@@ -1057,8 +1086,17 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     if (isPinchZoomingRef.current || ignoreSingleTouchUntilLiftRef.current) return;
 
     if (isPanningRef.current) {
-      const dx = e.clientX - panStartRef.current.clientX;
-      const dy = e.clientY - panStartRef.current.clientY;
+      const isRotatedPortrait =
+        typeof window !== 'undefined' &&
+        window.innerHeight > window.innerWidth &&
+        window.innerWidth <= 1024;
+
+      const rawDx = e.clientX - panStartRef.current.clientX;
+      const rawDy = e.clientY - panStartRef.current.clientY;
+
+      const dx = isRotatedPortrait ? rawDy : rawDx;
+      const dy = isRotatedPortrait ? -rawDx : rawDy;
+
       const newX = panStartRef.current.originX + dx;
       const newY = panStartRef.current.originY + dy;
       setPanOffset({ x: newX, y: newY });
@@ -1230,8 +1268,17 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     if (isPinchZoomingRef.current || ignoreSingleTouchUntilLiftRef.current) return;
 
     if (isPanningRef.current) {
-      const dx = e.clientX - panStartRef.current.clientX;
-      const dy = e.clientY - panStartRef.current.clientY;
+      const isRotatedPortrait =
+        typeof window !== 'undefined' &&
+        window.innerHeight > window.innerWidth &&
+        window.innerWidth <= 1024;
+
+      const rawDx = e.clientX - panStartRef.current.clientX;
+      const rawDy = e.clientY - panStartRef.current.clientY;
+
+      const dx = isRotatedPortrait ? rawDy : rawDx;
+      const dy = isRotatedPortrait ? -rawDx : rawDy;
+
       const newX = panStartRef.current.originX + dx;
       const newY = panStartRef.current.originY + dy;
       setPanOffset({ x: newX, y: newY });
