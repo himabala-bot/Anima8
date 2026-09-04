@@ -194,10 +194,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-sm sm:text-lg font-extrabold tracking-tight text-[#18181B]">
+              <span className="text-base sm:text-lg font-extrabold tracking-tight text-[#18181B]">
                 Anim8
               </span>
-              <span className="px-1.5 py-0.2 rounded-full bg-zinc-100 text-zinc-800 text-[9px] sm:text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-full bg-zinc-100 text-zinc-800 text-[9px] sm:text-[10px] font-bold">
                 STUDIO
               </span>
             </div>
@@ -217,9 +217,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
             <button
               onClick={() => setIsAuthModalOpen(true)}
               title={`Account: ${user.displayName} (${user.email})`}
-              className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold bg-[#F1F1F5] hover:bg-[#E5E5EA] border border-[#E5E5EA] text-[#18181B] transition-colors"
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold bg-[#F1F1F5] hover:bg-[#E5E5EA] border border-[#E5E5EA] text-[#18181B] transition-colors"
             >
-              <div className="w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full bg-black text-white text-[9px] sm:text-[10px] flex items-center justify-center font-bold">
+              <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-black text-white text-[9px] sm:text-[10px] flex items-center justify-center font-bold">
                 {user.displayName.charAt(0).toUpperCase()}
               </div>
               <span className="hidden sm:inline max-w-[90px] truncate">{user.displayName}</span>
@@ -228,16 +228,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold bg-white hover:bg-[#F1F1F5] border border-[#E5E5EA] text-[#18181B] transition-colors shadow-2xs"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold bg-white hover:bg-[#F1F1F5] border border-[#E5E5EA] text-[#18181B] transition-colors shadow-2xs"
             >
-              <User className="w-3.5 h-3.5 text-black" />
+              <User className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black" />
               <span>Sign In / Cloud</span>
             </button>
           )}
 
           <button
             onClick={() => setIsNewProjectModalOpen(true)}
-            className="flex items-center gap-1 px-3 py-1 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold bg-black hover:bg-zinc-800 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1 sm:py-2 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold bg-black hover:bg-zinc-800 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>New Project</span>
@@ -245,22 +245,22 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
         </div>
       </header>
 
-      {/* 2. HERO WELCOME SECTION (Compact on mobile landscape) */}
-      <section className="px-3 sm:px-8 py-2.5 sm:py-8 max-w-7xl mx-auto w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6 p-3.5 sm:p-8 rounded-2xl sm:rounded-3xl bg-black text-white shadow-xl relative overflow-hidden">
+      {/* 2. HERO WELCOME SECTION */}
+      <section className="px-3 sm:px-8 py-2.5 sm:py-6 max-w-7xl mx-auto w-full">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-6 p-3.5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-black text-white shadow-xl relative overflow-hidden">
           <div className="relative z-10 space-y-1 sm:space-y-2 max-w-xl">
-            <h1 className="text-base sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-base sm:text-2xl md:text-3xl font-extrabold tracking-tight">
               Welcome to Anim8
             </h1>
-            <p className="text-[11px] sm:text-sm text-zinc-300">
+            <p className="text-[11px] sm:text-sm md:text-base text-zinc-300">
               Create, animate, and bring your ideas to life with frame-by-frame strokes, multi-layers, and smooth video export.
             </p>
           </div>
 
-          <div className="relative z-10 flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
+          <div className="relative z-10 flex flex-wrap gap-2 sm:gap-3">
             <button
               onClick={() => setIsNewProjectModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 sm:px-6 sm:py-3.5 rounded-xl sm:rounded-2xl bg-white text-black font-extrabold text-xs sm:text-sm shadow-lg hover:bg-zinc-100 transition-all hover:scale-105 active:scale-95"
+              className="flex items-center gap-1.5 sm:gap-2 px-3.5 py-1.5 sm:px-6 sm:py-3.5 rounded-xl sm:rounded-2xl bg-white text-black font-extrabold text-xs sm:text-sm shadow-lg hover:bg-zinc-100 transition-all hover:scale-105 active:scale-95"
             >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
               <span>Create Animation</span>
@@ -270,9 +270,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
       </section>
 
       {/* 3. PROJECTS DASHBOARD SECTION */}
-      <main className="flex-1 px-3 sm:px-8 pb-8 max-w-7xl mx-auto w-full space-y-3 sm:space-y-6">
+      <main className="flex-1 px-3 sm:px-8 pb-8 sm:pb-16 max-w-7xl mx-auto w-full space-y-3 sm:space-y-6">
         {/* Search, Filter & Sort Bar */}
-        <div className="flex flex-row items-center justify-between gap-2 sm:gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <h2 className="text-sm sm:text-lg font-bold text-[#18181B]">Your Animations</h2>
             <span className="px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-full bg-[#E5E5EA] text-[#71717A] text-[10px] sm:text-xs font-mono font-bold">
@@ -280,9 +280,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
             {/* Search Input */}
-            <div className="relative w-36 sm:w-64">
+            <div className="relative flex-1 sm:w-64">
               <Search className="w-3.5 h-3.5 text-[#71717A] absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
@@ -295,7 +295,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
 
             {/* Sort Dropdown */}
             <div className="flex items-center gap-1 bg-white border border-[#E5E5EA] px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-xs text-[11px] sm:text-xs">
-              <SlidersHorizontal className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#71717A]" />
+              <SlidersHorizontal className="w-3 h-3 text-[#71717A]" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
@@ -312,17 +312,17 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
 
         {/* Project Cards Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4">
-            {[1, 2, 3, 4, 5].map((i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="h-44 sm:h-60 rounded-2xl sm:rounded-3xl bg-white border border-[#E5E5EA] animate-pulse p-3"
+                className="h-44 sm:h-64 rounded-2xl sm:rounded-3xl bg-white border border-[#E5E5EA] animate-pulse p-2 sm:p-4"
               />
             ))}
           </div>
         ) : filteredProjects.length === 0 ? (
           /* Empty State */
-          <div className="flex flex-col items-center justify-center p-8 sm:p-16 rounded-2xl sm:rounded-3xl bg-white border border-[#E5E5EA] text-center shadow-xs">
+          <div className="flex flex-col items-center justify-center p-8 sm:p-12 md:p-16 rounded-2xl sm:rounded-3xl bg-white border border-[#E5E5EA] text-center shadow-xs">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-black mb-3 sm:mb-4">
               <Film className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
@@ -336,14 +336,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
             </p>
             <button
               onClick={() => setIsNewProjectModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl sm:rounded-2xl bg-black hover:bg-zinc-800 text-white text-xs font-bold shadow-sm transition-all hover:scale-105"
+              className="flex items-center gap-1.5 sm:gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl bg-black hover:bg-zinc-800 text-white text-[11px] sm:text-xs font-bold shadow-sm transition-all hover:scale-105"
             >
               <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>New Project</span>
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4">
             {filteredProjects.map((proj) => {
               const frameCount = proj.frames?.length || 1;
               const isRenaming = renamingProjectId === proj.id;
@@ -364,7 +364,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                         className="w-full h-full object-contain"
                       />
                     ) : (
-                      <div className="flex flex-col items-center justify-center text-[#A1A1AA] gap-1">
+                      <div className="flex flex-col items-center justify-center text-[#A1A1AA] gap-0.5">
                         <Film className="w-6 h-6 sm:w-8 sm:h-8 text-[#D4D4D8] group-hover:scale-110 transition-transform" />
                         <span className="text-[9px] sm:text-[10px] font-mono">Frame #1</span>
                       </div>
@@ -372,21 +372,21 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
 
                     {/* Hover Open Overlay */}
                     <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-xs">
-                      <span className="flex items-center gap-1 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-lg sm:rounded-xl bg-white text-[#18181B] text-[11px] sm:text-xs font-bold shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform">
-                        <span>Open</span>
+                      <span className="flex items-center gap-1 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-lg sm:rounded-xl bg-white text-[#18181B] text-[10px] sm:text-xs font-bold shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                        <span>Open Editor</span>
                         <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black" />
                       </span>
                     </div>
 
                     {/* Frame Count Pill */}
-                    <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-md bg-white/90 backdrop-blur-md border border-[#E5E5EA] text-[9px] sm:text-[10px] font-mono font-bold text-[#18181B] shadow-xs">
-                      {frameCount} {frameCount === 1 ? 'frame' : 'frames'}
+                    <span className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 px-1.5 py-0.2 sm:px-2 sm:py-0.5 rounded-md bg-white/90 backdrop-blur-md border border-[#E5E5EA] text-[9px] sm:text-[10px] font-mono font-bold text-[#18181B] shadow-xs">
+                      {frameCount} {frameCount === 1 ? 'fr' : 'frs'}
                     </span>
 
                     {/* Cloud Sync Status Pill */}
                     <span
                       title={isAuthenticated ? 'Cloud Synced with Neon' : 'Saved locally in IndexedDB'}
-                      className="absolute top-1.5 right-1.5 p-0.5 sm:p-1 rounded-md bg-white/90 backdrop-blur-md border border-[#E5E5EA] shadow-xs flex items-center justify-center"
+                      className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-0.5 sm:p-1 rounded-md bg-white/90 backdrop-blur-md border border-[#E5E5EA] shadow-xs flex items-center justify-center"
                     >
                       {isAuthenticated ? (
                         <Cloud className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-600" />
@@ -397,7 +397,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                   </div>
 
                   {/* Card Content */}
-                  <div className="p-2.5 sm:p-4 flex flex-col justify-between flex-1">
+                  <div className="p-2 sm:p-3.5 flex flex-col justify-between flex-1 gap-1">
                     <div className="space-y-0.5 sm:space-y-1">
                       {isRenaming ? (
                         <div
@@ -411,27 +411,27 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                             onBlur={() => handleSaveRename(proj.id)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSaveRename(proj.id)}
                             autoFocus
-                            className="w-full px-1.5 py-0.5 rounded-md border border-black text-xs font-bold text-[#18181B] focus:outline-none"
+                            className="w-full px-1.5 py-0.5 rounded border border-black text-[11px] sm:text-xs font-bold text-[#18181B] focus:outline-none"
                           />
                           <button
                             onClick={() => handleSaveRename(proj.id)}
-                            className="p-1 rounded bg-black text-white"
+                            className="p-0.5 rounded bg-black text-white"
                           >
                             <Check className="w-3 h-3" />
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-1">
                           <h3 className="font-bold text-xs sm:text-sm text-[#18181B] truncate group-hover:text-black transition-colors">
                             {proj.name}
                           </h3>
 
-                          <div className="flex items-center gap-0.5">
+                          <div className="flex items-center gap-0.5 flex-shrink-0">
                             {/* Direct Delete Project Button */}
                             <button
                               onClick={(e) => handleDelete(proj.id, e)}
                               title="Delete Project permanently"
-                              className="p-0.5 sm:p-1 rounded-md text-[#71717A] hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                              className="p-0.5 sm:p-1 rounded text-[#71717A] hover:text-rose-600 hover:bg-rose-50 transition-colors"
                             >
                               <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                             </button>
@@ -444,7 +444,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                                   setActiveMenuId(isMenuOpen ? null : proj.id);
                                 }}
                                 title="More options"
-                                className="p-0.5 sm:p-1 rounded-md text-[#71717A] hover:text-[#18181B] hover:bg-[#F1F1F5] transition-colors"
+                                className="p-0.5 sm:p-1 rounded text-[#71717A] hover:text-[#18181B] hover:bg-[#F1F1F5] transition-colors"
                               >
                                 <MoreVertical className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                               </button>
@@ -452,36 +452,36 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                               {/* Dropdown Flyout */}
                               {isMenuOpen && (
                                 <div
-                                  className="absolute right-0 top-full mt-1 w-44 p-1.5 rounded-2xl bg-white border border-[#E5E5EA] shadow-xl z-50 text-xs space-y-0.5 animate-in fade-in duration-100"
+                                  className="absolute right-0 top-full mt-1 w-36 sm:w-44 p-1 rounded-xl sm:rounded-2xl bg-white border border-[#E5E5EA] shadow-xl z-50 text-[11px] sm:text-xs space-y-0.5 animate-in fade-in duration-100"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                 <button
                                   onClick={(e) => handleStartRename(proj, e)}
-                                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-[#F1F1F5] text-[#18181B] font-medium"
+                                  className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-[#F1F1F5] text-[#18181B] font-medium"
                                 >
-                                  <Edit2 className="w-3.5 h-3.5 text-[#71717A]" />
+                                  <Edit2 className="w-3 h-3 text-[#71717A]" />
                                   <span>Rename</span>
                                 </button>
                                 <button
                                   onClick={(e) => handleDuplicate(proj.id, e)}
-                                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-[#F1F1F5] text-[#18181B] font-medium"
+                                  className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-[#F1F1F5] text-[#18181B] font-medium"
                                 >
-                                  <Copy className="w-3.5 h-3.5 text-[#71717A]" />
+                                  <Copy className="w-3 h-3 text-[#71717A]" />
                                   <span>Duplicate</span>
                                 </button>
                                 <button
                                   onClick={(e) => handleExportProject(proj, e)}
-                                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-[#F1F1F5] text-[#18181B] font-medium"
+                                  className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-[#F1F1F5] text-[#18181B] font-medium"
                                 >
-                                  <Download className="w-3.5 h-3.5 text-[#71717A]" />
+                                  <Download className="w-3 h-3 text-[#71717A]" />
                                   <span>Export .anim8</span>
                                 </button>
-                                <div className="h-[1px] bg-[#E5E5EA] my-1" />
+                                <div className="h-[1px] bg-[#E5E5EA] my-0.5" />
                                 <button
                                   onClick={(e) => handleDelete(proj.id, e)}
-                                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-rose-50 text-rose-600 font-medium"
+                                  className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-rose-50 text-rose-600 font-medium"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-3 h-3" />
                                   <span>Delete</span>
                                 </button>
                                 </div>
@@ -492,17 +492,17 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                       )}
 
                       {/* Specs */}
-                      <div className="flex items-center gap-2 text-[11px] font-mono text-[#71717A]">
-                        <span>{proj.canvasWidth} × {proj.canvasHeight}</span>
+                      <div className="flex items-center gap-1 text-[9px] sm:text-[11px] font-mono text-[#71717A]">
+                        <span>{proj.canvasWidth}×{proj.canvasHeight}</span>
                         <span>•</span>
                         <span>{proj.fps} FPS</span>
                       </div>
                     </div>
 
                     {/* Relative Time Footer */}
-                    <div className="flex items-center gap-1 text-[10px] text-[#A1A1AA] pt-3 mt-2 border-t border-[#E5E5EA]">
-                      <Clock className="w-3 h-3" />
-                      <span>Edited {formatRelativeTime(proj.updatedAt)}</span>
+                    <div className="flex items-center gap-1 text-[8px] sm:text-[10px] text-[#A1A1AA] pt-1.5 sm:pt-2 mt-0.5 sm:mt-1 border-t border-[#E5E5EA]">
+                      <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                      <span className="truncate">{formatRelativeTime(proj.updatedAt)}</span>
                     </div>
                   </div>
                 </div>
