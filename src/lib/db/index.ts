@@ -26,7 +26,6 @@ export function getDb(): NeonHttpDatabase<typeof schema> {
   return cachedDb;
 }
 
-// Proxy exports `db` so existing queries like `db.select()`, `db.insert()` work transparently
 export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
   get(_target, prop, receiver) {
     const instance = getDb();

@@ -40,7 +40,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const workspaceContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Store state
   const canvasWidth = useStudioStore((state) => state.canvasWidth);
   const canvasHeight = useStudioStore((state) => state.canvasHeight);
   const canvasBgColor = useStudioStore((state) => state.canvasBgColor);
@@ -64,7 +63,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const past = useStudioStore((state) => state.past);
   const future = useStudioStore((state) => state.future);
 
-  // Store actions
   const commitLayerData = useStudioStore((state) => state.commitLayerData);
   const setColor = useStudioStore((state) => state.setColor);
   const undo = useStudioStore((state) => state.undo);
@@ -79,7 +77,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const copiedSelection = useStudioStore((state) => state.copiedSelection);
   const setReferenceImage = useStudioStore((state) => state.setReferenceImage);
 
-  // Multi-Touch & Real Pinch Zoom Interaction Refs
   const activePointersRef = useRef<Map<number, { clientX: number; clientY: number }>>(new Map());
   const pinchStateRef = useRef<{
     isActive: boolean;
@@ -95,7 +92,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     initialPan: { x: 0, y: 0 },
   });
 
-  // Smooth Pan Offset (Transform Translate based - works in all directions infinitely)
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const isPanningRef = useRef<boolean>(false);
   const panStartRef = useRef<{ clientX: number; clientY: number; originX: number; originY: number }>({
@@ -107,7 +103,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const isSpacePressedRef = useRef<boolean>(false);
   const [isPanMode, setIsPanMode] = useState<boolean>(false);
 
-  // Reference Image Freeform Transform Mode
   const [isAdjustingReference, setIsAdjustingReference] = useState<boolean>(false);
   const isTransformingRefImageRef = useRef<boolean>(false);
   const refTransformTypeRef = useRef<'move' | 'nw' | 'ne' | 'se' | 'sw' | 'n' | 's' | 'e' | 'w' | null>(null);
@@ -120,12 +115,10 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     refH: number;
   }>({ pointerX: 0, pointerY: 0, refX: 0, refY: 0, refW: 0, refH: 0 });
 
-  // Drawing Interaction refs
   const isDrawingRef = useRef<boolean>(false);
   const lastPointRef = useRef<Point | null>(null);
   const startPointRef = useRef<Point | null>(null);
 
-  // Selection Transform Interaction Refs
   const isTransformingRef = useRef<boolean>(false);
   const transformTypeRef = useRef<'move' | 'nw' | 'ne' | 'se' | 'sw' | 'n' | 's' | 'e' | 'w' | 'rotate' | null>(null);
   const transformStartRef = useRef<{
@@ -145,7 +138,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const prevFrame: Frame | undefined = activeFrameIndex > 0 ? frames[activeFrameIndex - 1] : undefined;
   const nextFrame: Frame | undefined = activeFrameIndex < frames.length - 1 ? frames[activeFrameIndex + 1] : undefined;
 
-  // Viewport dimensions
   const baseDisplayWidth = 640;
   const aspectRatio = canvasWidth / canvasHeight;
   const displayWidth = Math.round(baseDisplayWidth * (zoom / 100));
@@ -153,23 +145,18 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
 
   const zoomPresets = [25, 50, 75, 100, 150, 200, 300, 400, 500, 800, 1000];
 
-  /**
-   * CANCEL ACTIVE DRAWING STROKE (e.g. when second finger touches down for pinch/pan)
-   */
   const cancelActiveDrawingStroke = useCallback(() => {
     if (!isDrawingRef.current) return;
     isDrawingRef.current = false;
     startPointRef.current = null;
     lastPointRef.current = null;
 
-    // Clear preview canvas
     const prevCanvas = previewCanvasRef.current;
     if (prevCanvas) {
       const prevCtx = prevCanvas.getContext('2d');
       prevCtx?.clearRect(0, 0, canvasWidth, canvasHeight);
     }
 
-    // Restore drawing canvas to last valid state
     const drawCanvas = drawingCanvasRef.current;
     if (drawCanvas) {
       const ctx = drawCanvas.getContext('2d');
@@ -187,10 +174,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     }
   }, [activeLayer?.dataUrl, activeLayer?.visible, activeLayer?.opacity, canvasWidth, canvasHeight]);
 
-  /**
-   * REAL TWO-FINGER PINCH ZOOM & PAN CALCULATION
-   * Preserves canvas point underneath pinch midpoint while zooming seamlessly.
-   */
   const handlePinchZoom = useCallback(() => {
     if (activePointersRef.current.size < 2) return;
     const pointers = Array.from(activePointersRef.current.values());
@@ -204,18 +187,15 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     const { initialDistance, initialMidpoint, initialZoom, initialPan } = pinchStateRef.current;
     if (initialDistance <= 0) return;
 
-    // 1. Calculate zoom scale ratio
     const scale = currentDist / initialDistance;
     const rawZoom = Math.round(initialZoom * scale);
     const newZoom = Math.max(25, Math.min(1200, rawZoom));
 
-    // 2. Viewport container center
     const container = workspaceContainerRef.current;
     const containerRect = container?.getBoundingClientRect();
     const cx = containerRect ? containerRect.left + containerRect.width / 2 : window.innerWidth / 2;
     const cy = containerRect ? containerRect.top + containerRect.height / 2 : window.innerHeight / 2;
 
-    // 3. Zoom around midpoint and pan simultaneously
     const zoomRatio = newZoom / initialZoom;
     const newPanX = initialPan.x * zoomRatio + (currentMidX - cx) - (initialMidpoint.x - cx) * zoomRatio;
     const newPanY = initialPan.y * zoomRatio + (currentMidY - cy) - (initialMidpoint.y - cy) * zoomRatio;
@@ -224,9 +204,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     setPanOffset({ x: Math.round(newPanX), y: Math.round(newPanY) });
   }, [setZoom]);
 
-  /**
-   * PREVENT WHOLE-PAGE BROWSER ZOOM ON TRACKPAD / MOBILE MULTI-TOUCH
-   */
   useEffect(() => {
     const container = workspaceContainerRef.current;
     if (!container) return;
@@ -240,7 +217,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         const currentZoom = useStudioStore.getState().zoom;
         const nextZoom = Math.max(25, Math.min(1200, currentZoom + delta));
         
-        // Zoom towards mouse cursor
         const containerRect = container.getBoundingClientRect();
         const cx = containerRect.left + containerRect.width / 2;
         const cy = containerRect.top + containerRect.height / 2;
@@ -278,7 +254,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     container.addEventListener('gesturechange', handleGesture);
     container.addEventListener('gestureend', handleGesture);
 
-    // Global cleanup for lifted pointers
     const handleGlobalPointerUp = (e: PointerEvent) => {
       activePointersRef.current.delete(e.pointerId);
       if (activePointersRef.current.size < 2 && pinchStateRef.current.isActive) {
@@ -302,7 +277,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     };
   }, []);
 
-  // Coordinate mapper using getBoundingClientRect (matches zoom & panOffset seamlessly)
   const getCanvasCoordinates = useCallback(
     (clientX: number, clientY: number): Point | null => {
       const canvas = drawingCanvasRef.current;
@@ -325,9 +299,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     [canvasWidth, canvasHeight]
   );
 
-  /**
-   * Commit transformed selection back into active layer
-   */
   const commitSelectionToLayer = useCallback(async () => {
     if (!selection || !selection.dataUrl) {
       clearSelection();
@@ -363,9 +334,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     clearSelection();
   }, [selection, activeLayerId, commitLayerData, clearSelection]);
 
-  /**
-   * Delete selection permanently
-   */
   const deleteSelectionPermanently = useCallback(() => {
     const drawCanvas = drawingCanvasRef.current;
     if (drawCanvas) {
@@ -376,9 +344,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     clearSelection();
   }, [activeLayerId, commitLayerData, clearSelection]);
 
-  /**
-   * Cancel selection
-   */
   const cancelSelection = useCallback(async () => {
     if (!selection || !selection.dataUrl) {
       clearSelection();
@@ -404,9 +369,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     clearSelection();
   }, [selection, activeLayerId, commitLayerData, clearSelection]);
 
-  /**
-   * Handle pasting copied selection with clear offset beside original
-   */
   const handlePaste = useCallback(async () => {
     if (!copiedSelection) return;
     if (selection) {
@@ -415,9 +377,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     pasteSelection({ dx: 40, dy: 40 });
   }, [copiedSelection, selection, commitSelectionToLayer, pasteSelection]);
 
-  /**
-   * Duplicate selection (commits current selection and creates offset clone)
-   */
   const duplicateSelection = useCallback(async () => {
     if (!selection) return;
     const current = { ...selection };
@@ -466,7 +425,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     } catch {}
   }, [selection, setSelection]);
 
-  // Keyboard shortcut listener for canvas selection, tools, and transforms
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -487,24 +445,24 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       if ((e.key === 'Delete' || e.key === 'Backspace') && selection && !(e.target instanceof HTMLInputElement)) {
         deleteSelectionPermanently();
       }
-      // Copy shortcut (Ctrl+C / Cmd+C)
+      
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && selection && !(e.target instanceof HTMLInputElement)) {
         e.preventDefault();
         copySelection();
       }
-      // Cut shortcut (Ctrl+X / Cmd+X)
+      
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x' && selection && !(e.target instanceof HTMLInputElement)) {
         e.preventDefault();
         cutSelection();
       }
-      // Paste shortcut (Ctrl+V / Cmd+V) - pastes with distinct offset beside original
+      
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v' && !(e.target instanceof HTMLInputElement)) {
         if (copiedSelection) {
           e.preventDefault();
           handlePaste();
         }
       }
-      // Duplicate shortcut (Ctrl+D / Cmd+D)
+      
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd' && selection && !(e.target instanceof HTMLInputElement)) {
         e.preventDefault();
         duplicateSelection();
@@ -539,9 +497,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
 
   const lastDrawnDataUrlRef = useRef<string | null>(null);
 
-  /**
-   * Load active layer artwork onto drawing canvas
-   */
   const loadActiveLayerOntoCanvas = useCallback(async () => {
     const canvas = drawingCanvasRef.current;
     if (!canvas) return;
@@ -575,9 +530,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     loadActiveLayerOntoCanvas();
   }, [activeFrameIndex, activeLayerId, loadActiveLayerOntoCanvas]);
 
-  /**
-   * Render Bottom Layer (Background, Onion Skin, Reference Image, Lower Layers)
-   */
   const renderBottomCanvas = useCallback(async () => {
     const canvas = bottomCanvasRef.current;
     if (!canvas || !activeFrame) return;
@@ -586,7 +538,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // 1. Background Fill
     if (!canvasBgColor || canvasBgColor === 'transparent') {
       const tileSize = 24;
       for (let y = 0; y < canvasHeight; y += tileSize) {
@@ -600,7 +551,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
 
-    // 2. Reference Image Layer (rendered on bottom canvas when NOT in interactive adjust mode)
     if (referenceImage?.visible && referenceImage.dataUrl && !isAdjustingReference) {
       try {
         const refImg = await loadImage(referenceImage.dataUrl);
@@ -613,7 +563,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       } catch {}
     }
 
-    // 3. Onion Skinning
     if (onionSkin && !isPlaying) {
       if (prevFrame) {
         for (const l of prevFrame.layers) {
@@ -650,7 +599,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       }
     }
 
-    // 4. Lower Layers
     const activeLayerIdx = activeFrame.layers.findIndex((l) => l.id === activeLayerId);
     if (activeLayerIdx > 0) {
       for (let i = 0; i < activeLayerIdx; i++) {
@@ -667,7 +615,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       }
     }
 
-    // 5. Guides
     if (showGrid && !isPlaying) {
       ctx.save();
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
@@ -712,9 +659,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     showGrid,
   ]);
 
-  /**
-   * Render Top Overlay Layers
-   */
   const renderTopOverlayCanvas = useCallback(async () => {
     const canvas = topOverlayCanvasRef.current;
     if (!canvas || !activeFrame) return;
@@ -745,7 +689,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     renderTopOverlayCanvas();
   }, [renderBottomCanvas, renderTopOverlayCanvas]);
 
-  // Freehand stroke segment
   const drawStrokeSegment = (
     ctx: CanvasRenderingContext2D,
     p0: Point,
@@ -777,9 +720,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     ctx.restore();
   };
 
-  /**
-   * Selection Transform Handlers (Scale, Tilt, Rotate)
-   */
   const handleTransformDown = (
     e: React.PointerEvent,
     type: 'move' | 'nw' | 'ne' | 'se' | 'sw' | 'n' | 's' | 'e' | 'w' | 'rotate'
@@ -904,9 +844,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     }
   };
 
-  /**
-   * Reference Image Freeform Transform Handlers (Drag sides in any direction)
-   */
   const handleRefTransformDown = (
     e: React.PointerEvent,
     type: 'move' | 'nw' | 'ne' | 'se' | 'sw' | 'n' | 's' | 'e' | 'w'
@@ -1015,16 +952,11 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     }
   };
 
-  /**
-   * Robust Everywhere Hand Panning & Multi-Touch Gesture Detection
-   */
   const handleWorkspacePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isPlaying) return;
 
-    // Track active pointer
     activePointersRef.current.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
 
-    // Multi-touch pinch zoom / pan trigger (2+ fingers)
     if (activePointersRef.current.size >= 2) {
       cancelActiveDrawingStroke();
       isPanningRef.current = false;
@@ -1071,7 +1003,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       activePointersRef.current.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
     }
 
-    // 2-Finger Pinch Zoom / Pan
     if (activePointersRef.current.size >= 2) {
       handlePinchZoom();
       return;
@@ -1105,16 +1036,11 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     }
   };
 
-  /**
-   * Primary Canvas Gesture & Drawing Handlers
-   */
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (isPlaying) return;
 
-    // Track pointer
     activePointersRef.current.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
 
-    // Multi-touch pinch zoom / pan trigger (2+ fingers)
     if (activePointersRef.current.size >= 2) {
       cancelActiveDrawingStroke();
       isPanningRef.current = false;
@@ -1140,7 +1066,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       return;
     }
 
-    // Pan Mode Trigger
     if (isSpacePressedRef.current || e.button === 1 || activeTool === 'hand' || isPanMode) {
       e.preventDefault();
       isPanningRef.current = true;
@@ -1162,7 +1087,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       return;
     }
 
-    // If clicking outside selection with another tool, commit it
     if (selection && activeTool !== 'select') {
       commitSelectionToLayer();
     }
@@ -1186,7 +1110,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     const ctx = drawCanvas.getContext('2d');
     if (!ctx) return;
 
-    // Color Picker
     if (activeTool === 'picker') {
       const pixel = ctx.getImageData(Math.floor(pt.x), Math.floor(pt.y), 1, 1).data;
       const hex = `#${((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2])
@@ -1197,7 +1120,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       return;
     }
 
-    // Paint Bucket
     if (activeTool === 'bucket') {
       canvasFloodFill(ctx, pt.x, pt.y, selectedColor);
       const dataUrl = drawCanvas.toDataURL('image/png');
@@ -1207,7 +1129,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       return;
     }
 
-    // Brush / Eraser Dot
     if (activeTool === 'brush' || activeTool === 'eraser') {
       const currentSize = activeTool === 'eraser' ? eraserSize : brushSize;
       ctx.save();
@@ -1235,7 +1156,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       activePointersRef.current.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
     }
 
-    // 2-Finger Pinch Zoom / Pan
     if (activePointersRef.current.size >= 2) {
       handlePinchZoom();
       return;
@@ -1266,7 +1186,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     const prevCtx = previewCanvas.getContext('2d');
     if (!drawCtx || !prevCtx) return;
 
-    // Selection Dragging Marquee (CRITICAL: update lastPointRef!)
     if (activeTool === 'select' && startPointRef.current) {
       lastPointRef.current = pt;
       prevCtx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -1285,7 +1204,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       return;
     }
 
-    // Brush & Eraser
     if (activeTool === 'brush' || activeTool === 'eraser') {
       const native = e.nativeEvent;
       const events =
@@ -1311,7 +1229,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       return;
     }
 
-    // Shapes & Lines
     prevCtx.clearRect(0, 0, canvasWidth, canvasHeight);
     prevCtx.save();
     prevCtx.lineWidth = brushSize;
@@ -1356,7 +1273,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const handlePointerUpOrCancel = (e: React.PointerEvent<HTMLCanvasElement>) => {
     activePointersRef.current.delete(e.pointerId);
 
-    // If coming out of a pinch gesture, reset cleanly
     if (pinchStateRef.current.isActive) {
       if (activePointersRef.current.size < 2) {
         pinchStateRef.current.isActive = false;
@@ -1381,7 +1297,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       const drawCtx = drawCanvas.getContext('2d');
       const prevCtx = previewCanvas.getContext('2d');
 
-      // Selection Creation - Guaranteed bounds calculation
       if (activeTool === 'select' && startPointRef.current) {
         prevCtx?.clearRect(0, 0, canvasWidth, canvasHeight);
         const endPt = getCanvasCoordinates(e.clientX, e.clientY) || lastPointRef.current || startPointRef.current;
@@ -1397,7 +1312,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
           const selCtx = selCanvas.getContext('2d')!;
           selCtx.drawImage(drawCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
 
-          // Clear selected area on draw canvas
           drawCtx.clearRect(sx, sy, sw, sh);
           const dataUrl = drawCanvas.toDataURL('image/png');
           lastDrawnDataUrlRef.current = dataUrl;
@@ -1463,14 +1377,14 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         cursor: isPanActive ? (isPanningRef.current ? 'grabbing' : 'grab') : 'default',
       }}
     >
-      {/* Transform-Translated Artboard Center Wrapper (Infinite sideways & vertical panning) */}
+      
       <div
         className="relative transition-transform duration-75 ease-out"
         style={{
           transform: `translate(${panOffset.x}px, ${panOffset.y}px)`,
         }}
       >
-        {/* Artboard Frame */}
+        
         <div className="relative flex-shrink-0 p-1.5 rounded-3xl bg-white border border-[#E5E5EA] shadow-2xl shadow-zinc-200/80">
           <div
             className="relative overflow-hidden rounded-2xl bg-white border border-[#E5E5EA] shadow-inner"
@@ -1479,7 +1393,7 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
               height: `${displayHeight}px`,
             }}
           >
-            {/* 1. Bottom Canvas (Background, Onion Skin, Lower Layers) */}
+            
             <canvas
               ref={bottomCanvasRef}
               width={canvasWidth}
@@ -1487,7 +1401,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
               className="absolute inset-0 w-full h-full pointer-events-none"
             />
 
-            {/* 2. Direct On-Canvas Freeform Interactive Reference Image Overlay */}
             {referenceImage?.visible && referenceImage.dataUrl && (
               <div
                 onPointerMove={handleRefTransformMove}
@@ -1511,10 +1424,9 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
                     style={{ opacity: referenceImage.opacity }}
                   />
 
-                  {/* Freeform Interactive Drag Handles (when adjusting) */}
                   {isAdjustingReference && (
                     <>
-                      {/* 4 Corners */}
+                      
                       <div
                         onPointerDown={(e) => handleRefTransformDown(e, 'nw')}
                         title="Drag corner NW"
@@ -1536,7 +1448,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
                         className="absolute -bottom-2 -left-2 w-3.5 h-3.5 bg-blue-600 border-2 border-white rounded-xs cursor-nesw-resize shadow-md"
                       />
 
-                      {/* 4 Sides (Freeform Width & Height stretch) */}
                       <div
                         onPointerDown={(e) => handleRefTransformDown(e, 'n')}
                         title="Drag top side (N)"
@@ -1558,7 +1469,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
                         className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-2.5 h-4 bg-blue-600 border border-white rounded-xs cursor-ew-resize shadow-xs"
                       />
 
-                      {/* Floating Reference Toolbar */}
                       <div
                         className={`absolute ${((referenceImage.y / canvasHeight) * displayHeight < 45) ? 'top-[calc(100%+8px)]' : '-top-10'} left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black text-white text-[10px] font-bold shadow-xl z-50 pointer-events-auto whitespace-nowrap`}
                         onClick={(e) => e.stopPropagation()}
@@ -1588,7 +1498,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
               </div>
             )}
 
-            {/* 3. Active Layer Drawing Canvas */}
             <canvas
               ref={drawingCanvasRef}
               width={canvasWidth}
@@ -1596,7 +1505,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
               className="absolute inset-0 w-full h-full pointer-events-none"
             />
 
-            {/* 4. Top Overlay Canvas (Upper Layers) */}
             <canvas
               ref={topOverlayCanvasRef}
               width={canvasWidth}
@@ -1604,14 +1512,12 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
               className="absolute inset-0 w-full h-full pointer-events-none"
             />
 
-            {/* 5. Active Selection & Interactive Transform Overlay Box (Scale, Tilt, Rotate, Delete) */}
             {selection && selection.dataUrl && (() => {
               const selDisplayX = (selection.x / canvasWidth) * displayWidth;
               const selDisplayY = (selection.y / canvasHeight) * displayHeight;
               const selDisplayW = (selection.width / canvasWidth) * displayWidth;
               const selDisplayH = (selection.height / canvasHeight) * displayHeight;
 
-              // Smart Y position: Above if space allows, Below if near top, Inside top if large/fills canvas
               let barTop: number;
               if (selDisplayY >= 56) {
                 barTop = selDisplayY - 50;
@@ -1621,7 +1527,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
                 barTop = Math.max(12, selDisplayY + 12);
               }
 
-              // Clamp bar position to canvas frame bounds
               barTop = Math.max(10, Math.min(displayHeight - 48, barTop));
               const barLeft = Math.max(160, Math.min(displayWidth - 160, selDisplayX + selDisplayW / 2));
 
@@ -1640,7 +1545,7 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
                       transformOrigin: 'center center',
                     }}
                   >
-                    {/* Selection Box Frame */}
+                    
                     <div
                       onPointerDown={(e) => handleTransformDown(e, 'move')}
                       className="w-full h-full border-2 border-dashed border-black bg-black/5 cursor-move relative group"
@@ -1651,7 +1556,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
                         className="w-full h-full object-fill pointer-events-none select-none"
                       />
 
-                      {/* 4 Corner Scale Handles */}
                       <div
                         onPointerDown={(e) => handleTransformDown(e, 'nw')}
                         title="Scale NW"
@@ -1673,7 +1577,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
                         className="absolute -bottom-2 -left-2 w-3.5 h-3.5 bg-white border-2 border-black rounded-xs cursor-nesw-resize shadow-xs hover:scale-125 transition-transform"
                       />
 
-                      {/* 4 Midpoint Freeform Scale Handles */}
                       <div
                         onPointerDown={(e) => handleTransformDown(e, 'n')}
                         title="Scale Height (N)"
@@ -1695,7 +1598,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
                         className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-2 h-3 bg-white border border-black rounded-xs cursor-ew-resize shadow-2xs"
                       />
 
-                      {/* Top Rotation Handle with Stem */}
                       <div className="absolute -top-7 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto">
                         <div
                           onPointerDown={(e) => handleTransformDown(e, 'rotate')}
@@ -1709,7 +1611,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
                     </div>
                   </div>
 
-                  {/* Floating Transform Action Bar (Guaranteed Always Inside Viewport & Readable) */}
                   <div
                     style={{
                       top: `${barTop}px`,
@@ -1817,7 +1718,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
               );
             })()}
 
-            {/* 6. Top Interactive Gesture Canvas */}
             <canvas
               ref={previewCanvasRef}
               width={canvasWidth}
@@ -1844,7 +1744,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
               }}
             />
 
-            {/* Hover Coordinate Badge */}
             {hoverCoord && (
               <div className="absolute bottom-2 left-2 pointer-events-none px-2 py-0.5 rounded-md bg-white/90 border border-[#E5E5EA] text-[10px] font-mono text-[#71717A] shadow-sm">
                 X:{hoverCoord.x} Y:{hoverCoord.y}
@@ -1852,7 +1751,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
             )}
           </div>
 
-          {/* Floating Top Quick Actions (Undo, Redo, Clear) */}
           <div className="absolute -top-3.5 right-6 flex items-center gap-1 p-1 rounded-xl bg-white border border-[#E5E5EA] shadow-md z-10">
             {referenceImage?.dataUrl && (
               <>
@@ -1900,7 +1798,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         </div>
       </div>
 
-      {/* Floating Zoom & Pan Controls Bar */}
       <div className="absolute bottom-3 right-5 flex items-center gap-1 p-1 rounded-2xl bg-white/95 border border-[#E5E5EA] shadow-lg backdrop-blur-md z-20">
         <button
           onClick={() => {

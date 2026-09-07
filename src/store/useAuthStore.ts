@@ -1,8 +1,3 @@
-/**
- * Client-Side Authentication State Manager for Anim8
- * Adheres strictly to Zero localStorage rule: persists session tokens solely in IndexedDB.
- */
-
 import { create } from 'zustand';
 import {
   saveAuthSessionToDB,
@@ -50,7 +45,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const session = await getAuthSessionFromDB();
       if (session && session.token && session.user) {
-        // Validate token with server
+        
         try {
           const res = await fetch('/api/auth/me', {
             headers: { Authorization: `Bearer ${session.token}` },
@@ -183,10 +178,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
 
-  /**
-   * Safe migration helper: uploads existing local projects created in guest mode
-   * to the newly signed-in account without overwriting or losing work.
-   */
   claimLocalProjects: async () => {
     const { isAuthenticated } = get();
     if (!isAuthenticated) return 0;

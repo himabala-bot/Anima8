@@ -1,8 +1,3 @@
-/**
- * Server-Side Authentication & Authorization Module for Anim8
- * Secure password hashing with bcryptjs, signed JWT tokens, and Neon PostgreSQL ownership/permission enforcement.
- */
-
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db, schema } from '../lib/db';
@@ -39,9 +34,6 @@ export function verifyToken(token: string): AuthUserPayload | null {
   }
 }
 
-/**
- * Extracts and verifies the bearer token from the Authorization header
- */
 export async function authenticateRequest(authHeader?: string | null): Promise<AuthUserPayload | null> {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
@@ -53,7 +45,6 @@ export async function authenticateRequest(authHeader?: string | null): Promise<A
   const payload = verifyToken(token);
   if (!payload || !payload.userId) return null;
 
-  // Verify that the user still exists in database
   const [user] = await db
     .select({ id: schema.users.id, email: schema.users.email })
     .from(schema.users)
@@ -64,21 +55,16 @@ export async function authenticateRequest(authHeader?: string | null): Promise<A
   return payload;
 }
 
-/**
- * Validates whether the given user has access to the specified project.
- * Roles: 'owner' (full control), 'editor' (read/write), 'viewer' (read-only)
- */
 export async function checkProjectPermission(
   projectId: string,
   profileId: string | null,
   requiredRole: 'viewer' | 'editor' | 'owner' = 'viewer'
 ): Promise<{ allowed: boolean; role?: string; isOwner?: boolean; error?: string }> {
-  // If no user is authenticated, disallow cloud modification
+  
   if (!profileId) {
     return { allowed: false, error: 'Authentication required' };
   }
 
-  // 1. Check if the user is the owner
   const [proj] = await db
     .select({ id: schema.projects.id, ownerId: schema.projects.ownerId, deletedAt: schema.projects.deletedAt })
     .from(schema.projects)
@@ -92,12 +78,10 @@ export async function checkProjectPermission(
     return { allowed: true, role: 'owner', isOwner: true };
   }
 
-  // If owner role was strictly required and user is not owner
   if (requiredRole === 'owner') {
     return { allowed: false, error: 'Only the project owner can perform this action' };
   }
 
-  // 2. Check project_members table
   const [member] = await db
     .select({ role: schema.projectMembers.role })
     .from(schema.projectMembers)

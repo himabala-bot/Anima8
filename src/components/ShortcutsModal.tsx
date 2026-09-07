@@ -64,7 +64,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
       <div className="relative w-full max-w-md p-6 rounded-3xl bg-white border border-[#E5E5EA] shadow-2xl text-[#18181B] max-h-[85vh] flex flex-col">
-        {/* Header */}
+        
         <div className="flex items-center justify-between pb-3 border-b border-[#E5E5EA] flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-zinc-100 text-black border border-zinc-200">
@@ -86,7 +86,6 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
           </button>
         </div>
 
-        {/* Body */}
         <div className="flex-1 overflow-y-auto pr-1 my-4 space-y-4">
           {SHORTCUT_CATEGORIES.map((cat) => (
             <div key={cat.category} className="space-y-1.5">
@@ -110,7 +109,6 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
           ))}
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end pt-3 border-t border-[#E5E5EA] flex-shrink-0">
           <button
             onClick={onClose}

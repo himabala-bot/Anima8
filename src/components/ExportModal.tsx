@@ -53,7 +53,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     }
   }, [isOpen, canvasBgColor, frames.length]);
 
-  // Live preview animation loop inside modal
   useEffect(() => {
     if (!isOpen || frames.length === 0) return;
 
@@ -176,7 +175,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
       <div className="relative w-full max-w-lg p-6 rounded-3xl bg-white border border-[#E5E5EA] shadow-2xl text-[#18181B] max-h-[90vh] flex flex-col">
-        {/* Header */}
+        
         <div className="flex items-center justify-between pb-3 border-b border-[#E5E5EA] flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-zinc-100 text-black border border-zinc-200">
@@ -198,10 +197,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           </button>
         </div>
 
-        {/* Body */}
         <div className="flex-1 overflow-y-auto pr-1 my-4 space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* Live Preview Box */}
+            
             <div className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-[#F7F7FA] border border-[#E5E5EA] flex-shrink-0">
               <div className="relative w-44 h-28 rounded-xl overflow-hidden shadow-inner border border-[#E5E5EA] bg-white flex items-center justify-center">
                 <canvas
@@ -216,9 +214,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
               </span>
             </div>
 
-            {/* Settings Column */}
             <div className="flex-1 space-y-3">
-              {/* Format Selector */}
+              
               <div>
                 <label className="block text-xs font-semibold text-[#18181B] mb-1.5">
                   Format
@@ -246,7 +243,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
                 </div>
               </div>
 
-              {/* Resolution Scale */}
               <div>
                 <label className="block text-xs font-semibold text-[#18181B] mb-1.5">
                   Resolution Scale
@@ -272,7 +268,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
                 </div>
               </div>
 
-              {/* Audio Inclusion Option */}
               {format === 'video' && audioTrack && (
                 <label className="flex items-center gap-2 p-2 rounded-xl bg-zinc-100 border border-zinc-200 cursor-pointer text-xs">
                   <input
@@ -290,7 +285,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             </div>
           </div>
 
-          {/* Frame Range Selector */}
           <div className="p-3 rounded-2xl bg-[#F7F7FA] border border-[#E5E5EA] space-y-2">
             <span className="block text-xs font-semibold text-[#18181B]">
               Frame Range
@@ -321,7 +315,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             </div>
           </div>
 
-          {/* Background Selector */}
           <div className="flex items-center justify-between pt-1">
             <span className="text-xs font-semibold text-[#18181B]">Canvas Background:</span>
             <div className="flex items-center gap-1.5">
@@ -345,7 +338,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             </div>
           </div>
 
-          {/* Progress Bar */}
           {isExporting && (
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-mono text-[#71717A]">
@@ -369,7 +361,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           )}
         </div>
 
-        {/* Actions */}
         <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E5E5EA] flex-shrink-0">
           <button
             onClick={onClose}

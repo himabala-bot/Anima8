@@ -60,7 +60,7 @@ export const ReferenceImageModal: React.FC<ReferenceImageModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
       <div className="relative w-full max-w-md p-6 rounded-3xl bg-white border border-[#E5E5EA] shadow-2xl text-[#18181B]">
-        {/* Header */}
+        
         <div className="flex items-center justify-between pb-3 border-b border-[#E5E5EA]">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-black text-white">
@@ -82,7 +82,6 @@ export const ReferenceImageModal: React.FC<ReferenceImageModalProps> = ({
           </button>
         </div>
 
-        {/* Body */}
         <div className="my-5 space-y-4">
           <input
             type="file"
@@ -109,7 +108,7 @@ export const ReferenceImageModal: React.FC<ReferenceImageModalProps> = ({
             </div>
           ) : (
             <div className="space-y-3.5">
-              {/* Image Preview Box */}
+              
               <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-[#E5E5EA] bg-[#F7F7FA] flex items-center justify-center p-2">
                 <img
                   src={referenceImage.dataUrl}
@@ -119,9 +118,8 @@ export const ReferenceImageModal: React.FC<ReferenceImageModalProps> = ({
                 />
               </div>
 
-              {/* Controls */}
               <div className="p-3.5 rounded-2xl bg-[#F7F7FA] border border-[#E5E5EA] space-y-3">
-                {/* Visibility */}
+                
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[#18181B]">
                     Visibility
@@ -148,7 +146,6 @@ export const ReferenceImageModal: React.FC<ReferenceImageModalProps> = ({
                   </button>
                 </div>
 
-                {/* Opacity Slider */}
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-[#71717A] mb-1">
                     <span>Opacity</span>
@@ -171,7 +168,6 @@ export const ReferenceImageModal: React.FC<ReferenceImageModalProps> = ({
                   />
                 </div>
 
-                {/* Freeform Width & Height Info */}
                 <div className="grid grid-cols-2 gap-2 pt-1 border-t border-zinc-200 text-xs">
                   <div>
                     <span className="text-[11px] font-semibold text-zinc-500 block mb-0.5">Width</span>
@@ -188,7 +184,6 @@ export const ReferenceImageModal: React.FC<ReferenceImageModalProps> = ({
                 </div>
               </div>
 
-              {/* Replace / Delete Reference Image */}
               <div className="flex items-center justify-between gap-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -208,7 +203,6 @@ export const ReferenceImageModal: React.FC<ReferenceImageModalProps> = ({
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end pt-3 border-t border-[#E5E5EA]">
           <button
             onClick={onClose}

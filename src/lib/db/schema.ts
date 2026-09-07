@@ -12,7 +12,6 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-// 0. USERS (Authentication & Account Management)
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').notNull().unique(),
@@ -21,7 +20,6 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-// 1. PROFILES
 export const profiles = pgTable('profiles', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
@@ -31,7 +29,6 @@ export const profiles = pgTable('profiles', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-// 2. PROJECTS
 export const projects = pgTable(
   'projects',
   {
@@ -54,7 +51,6 @@ export const projects = pgTable(
   ]
 );
 
-// 3. FRAMES
 export const frames = pgTable(
   'frames',
   {
@@ -73,7 +69,6 @@ export const frames = pgTable(
   ]
 );
 
-// 4. LAYERS
 export const layers = pgTable(
   'layers',
   {
@@ -95,7 +90,6 @@ export const layers = pgTable(
   ]
 );
 
-// 5. PROJECT MEMBERS
 export const projectMembers = pgTable(
   'project_members',
   {
@@ -106,7 +100,7 @@ export const projectMembers = pgTable(
     userId: uuid('user_id')
       .references(() => profiles.id, { onDelete: 'cascade' })
       .notNull(),
-    role: text('role').notNull(), // 'viewer' | 'editor'
+    role: text('role').notNull(), 
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
@@ -114,7 +108,6 @@ export const projectMembers = pgTable(
   ]
 );
 
-// 6. ASSETS
 export const assets = pgTable('assets', {
   id: uuid('id').primaryKey().defaultRandom(),
   projectId: uuid('project_id')
@@ -129,7 +122,6 @@ export const assets = pgTable('assets', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-// 7. AUDIO ASSETS
 export const audioAssets = pgTable('audio_assets', {
   id: uuid('id').primaryKey().defaultRandom(),
   projectId: uuid('project_id')
@@ -143,7 +135,6 @@ export const audioAssets = pgTable('audio_assets', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-// 8. REFERENCE ASSETS
 export const referenceAssets = pgTable('reference_assets', {
   id: uuid('id').primaryKey().defaultRandom(),
   projectId: uuid('project_id')
@@ -156,7 +147,6 @@ export const referenceAssets = pgTable('reference_assets', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-// 9. PROJECT VERSIONS
 export const projectVersions = pgTable('project_versions', {
   id: uuid('id').primaryKey().defaultRandom(),
   projectId: uuid('project_id')
@@ -168,7 +158,6 @@ export const projectVersions = pgTable('project_versions', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-// 10. COMMENTS
 export const comments = pgTable('comments', {
   id: uuid('id').primaryKey().defaultRandom(),
   projectId: uuid('project_id')
@@ -181,7 +170,6 @@ export const comments = pgTable('comments', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-// RELATIONS
 export const usersRelations = relations(users, ({ one }) => ({
   profile: one(profiles, {
     fields: [users.id],

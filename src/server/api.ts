@@ -1,9 +1,3 @@
-/**
- * Server-Side REST API Handlers for Anim8 Cloud Backend
- * Connects securely to Neon PostgreSQL via Drizzle ORM and authenticates with JWT.
- * Runs strictly in server-side Node environment (e.g. Vite server middleware / Next.js API).
- */
-
 import { db, schema } from '../lib/db';
 import { eq, desc, isNull, and, or, sql } from 'drizzle-orm';
 import {
@@ -14,7 +8,6 @@ import {
   checkProjectPermission,
 } from './auth';
 
-// Helper to convert any custom ID string to a deterministic/valid UUID if needed
 function ensureUuid(id: string): string {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (uuidRegex.test(id)) return id;
@@ -40,7 +33,6 @@ export async function handleApiRequest(
     const authHeader = headers?.authorization || headers?.Authorization;
     const authUser = await authenticateRequest(authHeader);
 
-    // 1. Health Check
     if ((pathname === '/api/health' || pathname === '/api' || pathname === '/api/') && method === 'GET') {
       try {
         await db.execute(sql`SELECT 1`);
@@ -56,7 +48,6 @@ export async function handleApiRequest(
       }
     }
 
-    // 2. Authentication: Sign Up
     if (pathname === '/api/auth/signup' && method === 'POST') {
       const { email, password, displayName } = body || {};
       if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
@@ -68,7 +59,6 @@ export async function handleApiRequest(
 
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Check if user exists
       const [existingUser] = await db
         .select()
         .from(schema.users)
@@ -78,7 +68,6 @@ export async function handleApiRequest(
         return { status: 409, data: { error: 'An account with this email already exists' } };
       }
 
-      // Hash password and create user + profile
       const passwordHash = await hashPassword(password);
       const [newUser] = await db
         .insert(schema.users)
@@ -117,7 +106,6 @@ export async function handleApiRequest(
       };
     }
 
-    // 3. Authentication: Log In
     if (pathname === '/api/auth/login' && method === 'POST') {
       const { email, password } = body || {};
       if (!email || !password) {
@@ -139,7 +127,6 @@ export async function handleApiRequest(
         return { status: 401, data: { error: 'Invalid email or password' } };
       }
 
-      // Fetch or auto-create profile
       let [profile] = await db
         .select()
         .from(schema.profiles)
@@ -176,7 +163,6 @@ export async function handleApiRequest(
       };
     }
 
-    // 4. Authentication: Get Current Profile (/api/auth/me)
     if (pathname === '/api/auth/me' && method === 'GET') {
       if (!authUser) {
         return { status: 401, data: { error: 'Unauthenticated' } };
@@ -201,14 +187,12 @@ export async function handleApiRequest(
       };
     }
 
-    // 5. Projects List (Protected or Guest Accessible)
     if (pathname === '/api/projects' && method === 'GET') {
       if (!authUser) {
-        // Unauthenticated guests only see local projects on client
+        
         return { status: 200, data: { projects: [] } };
       }
 
-      // Find projects owned by user or shared via project_members
       const ownedProjects = await db
         .select()
         .from(schema.projects)
@@ -246,7 +230,6 @@ export async function handleApiRequest(
       return { status: 200, data: { projects: allProjects } };
     }
 
-    // 6. Create Project
     if (pathname === '/api/projects' && method === 'POST') {
       if (!authUser) {
         return { status: 401, data: { error: 'Please sign in to save projects to the cloud' } };
@@ -272,7 +255,6 @@ export async function handleApiRequest(
       return { status: 201, data: { project: newProj } };
     }
 
-    // 7. Single Project Operations: /api/projects/:id
     const projectMatch = pathname.match(/^\/api\/projects\/([^\/]+)$/);
     if (projectMatch) {
       const rawId = projectMatch[1];
@@ -358,7 +340,6 @@ export async function handleApiRequest(
       }
     }
 
-    // 8. Batch Sync Queue: /api/sync
     if (pathname === '/api/sync' && method === 'POST') {
       if (!authUser) {
         return { status: 401, data: { error: 'Authentication required for cloud sync' } };
@@ -408,7 +389,7 @@ export async function handleApiRequest(
             case 'UPDATE_PROJECT': {
               const perm = await checkProjectPermission(projId, authUser.profileId, 'editor');
               if (!perm.allowed) {
-                // If the project doesn't exist yet in cloud, create it under current user
+                
                 const p = op.payload || {};
                 await db
                   .insert(schema.projects)
@@ -496,7 +477,6 @@ export async function handleApiRequest(
       };
     }
 
-    // 9. Asset Upload: /api/assets/upload
     if (pathname === '/api/assets/upload' && method === 'POST') {
       if (!authUser) {
         return { status: 401, data: { error: 'Authentication required to upload cloud assets' } };

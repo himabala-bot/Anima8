@@ -1,9 +1,3 @@
-/**
- * Sync Queue Engine for Anim8 Studio
- * Manages background asynchronous synchronization between IndexedDB and Neon PostgreSQL.
- * Guarantees that local editor operations never block on network or database queries.
- */
-
 import {
   enqueueSyncOp,
   getPendingSyncOps,
@@ -55,9 +49,6 @@ class SyncEngine {
     }
   }
 
-  /**
-   * Enqueue a new mutation to sync queue and trigger background sync
-   */
   public async enqueue(
     operation: SyncOpType,
     entityType: 'project' | 'frame' | 'layer' | 'stroke',
@@ -93,9 +84,6 @@ class SyncEngine {
     }, delayMs);
   }
 
-  /**
-   * Drain pending queue items by batching to server /api/sync
-   */
   public async drain(): Promise<void> {
     if (this.isProcessing) return;
     if (typeof window === 'undefined' || !navigator.onLine) {
@@ -103,7 +91,6 @@ class SyncEngine {
       return;
     }
 
-    // Only sync to cloud if authenticated
     if (!this.authToken) {
       this.notify('idle', 0);
       return;
@@ -120,7 +107,6 @@ class SyncEngine {
 
       this.notify('syncing', items.length);
 
-      // Process in batches of up to 25 items
       const batch = items.slice(0, 25);
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -154,7 +140,6 @@ class SyncEngine {
         }
       }
 
-      // Check if more items remain in queue
       const remaining = await getPendingSyncOps();
       if (remaining.length > 0) {
         this.isProcessing = false;

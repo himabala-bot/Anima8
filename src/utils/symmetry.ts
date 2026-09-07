@@ -2,13 +2,6 @@ import { Point } from './bresenham';
 
 export type SymmetryMode = 'none' | 'horizontal' | 'vertical';
 
-/**
- * Calculates symmetrical points corresponding to (x, y) based on width, height, and active SymmetryMode.
- *
- * - 'none': Returns [{ x, y }]
- * - 'horizontal': Mirrors horizontally across the vertical center line (x' = width - 1 - x, y)
- * - 'vertical': Mirrors vertically across the horizontal center line (x, y' = height - 1 - y)
- */
 export function getSymmetricPoints(
   x: number,
   y: number,

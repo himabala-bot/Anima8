@@ -1,8 +1,3 @@
-/**
- * Backend-Agnostic Project Data Layer for Anim8 Studio
- * Local-First + Neon PostgreSQL Cloud Synchronized Architecture
- */
-
 import {
   saveProjectToDB,
   getProjectFromDB,
@@ -50,9 +45,6 @@ export interface IProjectRepository {
   ): Promise<ProjectRecord>;
 }
 
-/**
- * Local-First IndexedDB Repository with Background Sync Queue Dispatch
- */
 export class LocalProjectRepository implements IProjectRepository {
   async getAllProjects(): Promise<ProjectRecord[]> {
     return getAllProjectsFromDB();
@@ -66,7 +58,6 @@ export class LocalProjectRepository implements IProjectRepository {
     const updated = { ...project, updatedAt: Date.now() };
     await saveProjectToDB(updated);
 
-    // Enqueue cloud sync in background (non-blocking)
     syncEngine.enqueue(
       'UPDATE_PROJECT',
       'project',
@@ -86,7 +77,6 @@ export class LocalProjectRepository implements IProjectRepository {
     const proj = await getProjectFromDB(projectId);
     if (!proj) return;
 
-    // Fast-path stroke update in local storage
     await saveProjectToDB(proj);
 
     syncEngine.enqueue(
@@ -179,18 +169,12 @@ export class LocalProjectRepository implements IProjectRepository {
   }
 }
 
-/**
- * Hybrid Repository:
- * Serves projects immediately from IndexedDB for zero latency & offline resilience,
- * and fetches missing cloud projects from Neon PostgreSQL when online.
- */
 export class HybridProjectRepository extends LocalProjectRepository {
   override async getProjectById(id: string): Promise<ProjectRecord | null> {
-    // 1. Check local IndexedDB first
+    
     const local = await super.getProjectById(id);
     if (local) return local;
 
-    // 2. If not found locally and online, fetch from Neon cloud API
     if (typeof window !== 'undefined' && navigator.onLine) {
       try {
         const res = await fetch(`/api/projects/${id}`);
@@ -234,5 +218,4 @@ export class HybridProjectRepository extends LocalProjectRepository {
   }
 }
 
-// Singleton repository instance
 export const projectRepository: IProjectRepository = new HybridProjectRepository();

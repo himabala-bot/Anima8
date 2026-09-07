@@ -5,7 +5,7 @@ export interface ExportVideoOptions {
   canvasWidth: number;
   canvasHeight: number;
   fps: number;
-  scale?: number; // 1x, 2x, 0.5x
+  scale?: number; 
   repeatCount?: number;
   backgroundColor?: string | null;
   fromFrameIndex?: number;
@@ -13,9 +13,6 @@ export interface ExportVideoOptions {
   audioTrack?: AudioTrackState | null;
 }
 
-/**
- * Loads an image from dataURL into an HTMLImageElement
- */
 export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -26,9 +23,6 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/**
- * Composites all visible layers of a single frame onto a target 2D canvas context
- */
 export async function renderFrameToContext(
   ctx: CanvasRenderingContext2D,
   frame: Frame,
@@ -36,7 +30,7 @@ export async function renderFrameToContext(
   targetHeight: number,
   backgroundColor: string | null = '#ffffff'
 ): Promise<void> {
-  // 1. Background fill
+  
   if (backgroundColor && backgroundColor !== 'transparent') {
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, targetWidth, targetHeight);
@@ -44,7 +38,6 @@ export async function renderFrameToContext(
     ctx.clearRect(0, 0, targetWidth, targetHeight);
   }
 
-  // 2. Draw each visible layer in stack order
   for (const layer of frame.layers) {
     if (layer.visible && layer.dataUrl && layer.opacity > 0) {
       try {
@@ -60,9 +53,6 @@ export async function renderFrameToContext(
   }
 }
 
-/**
- * Detects the best supported browser video MIME type
- */
 export function getSupportedVideoMimeType(): string {
   if (typeof MediaRecorder === 'undefined') {
     return 'video/webm';
@@ -85,9 +75,6 @@ export function getSupportedVideoMimeType(): string {
   return 'video/webm';
 }
 
-/**
- * Builds expanded sequence of frames accounting for exposure duration
- */
 function buildExpandedFrameSequence(
   frames: Frame[],
   fromIdx = 0,
@@ -109,9 +96,6 @@ function buildExpandedFrameSequence(
   return expanded.length > 0 ? expanded : frames;
 }
 
-/**
- * Exports 2D animation sequence as WebM / MP4 video with multi-layer compositing, exposure timing, and audio
- */
 export async function exportAnimationToVideo(
   options: ExportVideoOptions,
   onProgress?: (progress: number) => void
@@ -145,7 +129,6 @@ export async function exportAnimationToVideo(
     throw new Error('Failed to create offscreen 2D canvas context.');
   }
 
-  // Pre-render each unique frame to offscreen image bitmap for stutter-free recording
   const uniqueFrames = Array.from(new Set(sequence));
   const renderedCache = new Map<string, HTMLCanvasElement>();
 
@@ -159,7 +142,6 @@ export async function exportAnimationToVideo(
     renderedCache.set(f.id, offCanvas);
   }
 
-  // Setup Canvas Stream & Audio Stream
   const canvasStream = canvas.captureStream(fps);
   let combinedStream = canvasStream;
   let audioCtx: AudioContext | null = null;
@@ -260,9 +242,6 @@ export async function exportAnimationToVideo(
   });
 }
 
-/**
- * Exports 2D animation sequence as Animated GIF
- */
 export async function exportAnimationToGif(
   options: ExportVideoOptions,
   onProgress?: (progress: number) => void
@@ -350,14 +329,10 @@ export async function exportAnimationToGif(
   });
 }
 
-/**
- * Loads gifshot library from CDN
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getGifshotLibrary(): Promise<any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   if (typeof window !== 'undefined' && (window as any).gifshot) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     return (window as any).gifshot;
   }
 
@@ -365,9 +340,9 @@ async function getGifshotLibrary(): Promise<any> {
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js';
     script.onload = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       if ((window as any).gifshot) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
         resolve((window as any).gifshot);
       } else {
         reject(new Error('gifshot failed to load from CDN.'));
@@ -378,9 +353,6 @@ async function getGifshotLibrary(): Promise<any> {
   });
 }
 
-/**
- * Helper to download Blob
- */
 export function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

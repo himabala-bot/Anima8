@@ -1,7 +1,3 @@
-/**
- * 2D Canvas Flood Fill Algorithm with tolerance support.
- * Operates directly on an HTML5 Canvas 2D Context.
- */
 export function canvasFloodFill(
   ctx: CanvasRenderingContext2D,
   startX: number,
@@ -18,7 +14,6 @@ export function canvasFloodFill(
   const imageData = ctx.getImageData(0, 0, width, height);
   const data = imageData.data;
 
-  // Convert hex to RGBA
   const fillR = parseInt(fillColorHex.slice(1, 3), 16) || 0;
   const fillG = parseInt(fillColorHex.slice(3, 5), 16) || 0;
   const fillB = parseInt(fillColorHex.slice(5, 7), 16) || 0;
@@ -30,7 +25,6 @@ export function canvasFloodFill(
   const targetB = data[startIndex + 2];
   const targetA = data[startIndex + 3];
 
-  // If already the same color, early return
   if (
     Math.abs(targetR - fillR) <= 2 &&
     Math.abs(targetG - fillG) <= 2 &&

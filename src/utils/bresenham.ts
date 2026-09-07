@@ -3,11 +3,6 @@ export interface Point {
   y: number;
 }
 
-/**
- * Bresenham's Line Algorithm
- * Calculates continuous integer pixel coordinates between two points (x0, y0) and (x1, y1).
- * Ensures that fast pointer drags leave no gaps in the stroke.
- */
 export function getBresenhamLine(
   x0: number,
   y0: number,

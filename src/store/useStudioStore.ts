@@ -7,13 +7,13 @@ export interface Layer {
   name: string;
   visible: boolean;
   locked: boolean;
-  opacity: number; // 0.0 to 1.0
+  opacity: number; 
   dataUrl: string | null;
 }
 
 export interface Frame {
   id: string;
-  exposure: number; // Duration in ticks/frames (default: 1)
+  exposure: number; 
   layers: Layer[];
 }
 
@@ -37,13 +37,13 @@ export interface SelectionState {
   y: number;
   width: number;
   height: number;
-  rotation: number; // in degrees
+  rotation: number; 
   dataUrl: string | null;
 }
 
 export interface ReferenceImageState {
   visible: boolean;
-  opacity: number; // 0.0 to 1.0
+  opacity: number; 
   x: number;
   y: number;
   width: number;
@@ -55,10 +55,10 @@ export interface ReferenceImageState {
 export interface AudioTrackState {
   name: string;
   dataUrl: string;
-  duration: number; // in seconds
-  offset: number; // start offset in seconds
+  duration: number; 
+  offset: number; 
   muted: boolean;
-  volume: number; // 0.0 to 1.0
+  volume: number; 
 }
 
 export interface ColorPalette {
@@ -138,25 +138,20 @@ export interface StudioState {
   canvasBgColor: string | null;
   saveStatus: 'saved' | 'saving' | 'error';
 
-  // Brush & Tool settings
   brushPreset: BrushPresetType;
-  brushSize: number; // 1 to 150 px
-  brushOpacity: number; // 0.05 to 1.0
-  eraserSize: number; // 1 to 150 px
+  brushSize: number; 
+  brushOpacity: number; 
+  eraserSize: number; 
   activeTool: ToolType;
   shapeType: ShapeType;
   shapeFill: boolean;
 
-  // Selection & Transform state
   selection: SelectionState | null;
 
-  // Reference Image Layer
   referenceImage: ReferenceImageState | null;
 
-  // Audio Track
   audioTrack: AudioTrackState | null;
 
-  // Animation timeline settings
   fps: number;
   activeFrameIndex: number;
   activeLayerId: string;
@@ -166,29 +161,24 @@ export interface StudioState {
   isPlaying: boolean;
   isLooping: boolean;
 
-  // Visual aids
   onionSkin: boolean;
   onionSkinOpacity: number;
   onionSkinMode: 'prev' | 'both';
   showGrid: boolean;
   zoom: number;
 
-  // Color & Palettes
   selectedColor: string;
   palette: string[];
   activePaletteName: string;
   recentColors: string[];
 
-  // History Stacks
   past: Frame[][];
   future: Frame[][];
 
-  // Actions
   setProjectName: (name: string) => void;
   setCanvasDimensions: (width: number, height: number) => void;
   setCanvasBgColor: (color: string | null) => void;
 
-  // Brush & Eraser actions
   setBrushPreset: (preset: BrushPresetType) => void;
   setBrushSize: (size: number) => void;
   setBrushOpacity: (opacity: number) => void;
@@ -200,7 +190,6 @@ export interface StudioState {
   addRecentColor: (color: string) => void;
   setPalette: (paletteName: string) => void;
 
-  // Layer actions
   setActiveLayerId: (id: string) => void;
   addLayer: () => void;
   duplicateLayer: (layerId: string) => void;
@@ -212,7 +201,6 @@ export interface StudioState {
   renameLayer: (layerId: string, name: string) => void;
   commitLayerData: (layerId: string, dataUrl: string | null, isStroke?: boolean) => void;
 
-  // Selection actions
   setSelection: (selection: SelectionState | null) => void;
   applySelectionTransform: (x: number, y: number, width: number, height: number, rotation: number) => void;
   copySelection: () => void;
@@ -223,11 +211,9 @@ export interface StudioState {
   deleteSelection: () => void;
   copiedSelection: SelectionState | null;
 
-  // Reference Image & Audio
   setReferenceImage: (ref: ReferenceImageState | null) => void;
   setAudioTrack: (audio: AudioTrackState | null) => void;
 
-  // Animation timeline actions
   addFrame: (insertAfterIndex?: number) => void;
   duplicateFrame: (index: number) => void;
   deleteFrame: (index: number) => void;
@@ -237,7 +223,6 @@ export interface StudioState {
   nextFrame: () => void;
   prevFrame: () => void;
 
-  // Multi-frame operations
   toggleFrameSelection: (index: number, isMulti: boolean) => void;
   selectAllFrames: () => void;
   clearFrameSelection: () => void;
@@ -246,7 +231,6 @@ export interface StudioState {
   copySelectedFrames: () => void;
   pasteFrames: () => void;
 
-  // Playback & view actions
   setFps: (fps: number) => void;
   setIsPlaying: (playing: boolean) => void;
   setIsLooping: (looping: boolean) => void;
@@ -256,7 +240,6 @@ export interface StudioState {
   setShowGrid: (enabled: boolean) => void;
   setZoom: (zoom: number) => void;
 
-  // History & project actions
   undo: () => void;
   redo: () => void;
   clearCurrentFrame: () => void;
@@ -398,7 +381,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     }
   },
 
-  // Layer Actions
   setActiveLayerId: (id: string) => {
     set({ activeLayerId: id });
   },
@@ -572,9 +554,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     get().saveToStorage();
   },
 
-  /**
-   * Commit layer data & immediately persist stroke
-   */
   commitLayerData: (layerId: string, dataUrl: string | null, isStroke = true) => {
     const { frames, activeFrameIndex, past } = get();
     const currentFrame = frames[activeFrameIndex];
@@ -594,11 +573,9 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       frames: updatedFrames,
     });
 
-    // Level 1: Immediate stroke durability
     get().saveToStorage(isStroke);
   },
 
-  // Selection & Transform Actions
   setSelection: (selection: SelectionState | null) => {
     set({ selection });
   },
@@ -635,7 +612,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     const { copiedSelection, canvasWidth, canvasHeight, selection } = get();
     if (!copiedSelection || !copiedSelection.dataUrl) return;
 
-    // Use current active selection position if present, otherwise copiedSelection position
     const baseX = selection ? selection.x : copiedSelection.x;
     const baseY = selection ? selection.y : copiedSelection.y;
 
@@ -645,7 +621,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     let nextX = baseX + dx;
     let nextY = baseY + dy;
 
-    // If offset places it off the right or bottom canvas edges, place to the other side
     if (nextX + (copiedSelection.width || 40) > canvasWidth) {
       nextX = Math.max(12, baseX - dx);
     }
@@ -697,7 +672,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     set({ selection: null });
   },
 
-  // Reference Image & Audio
   setReferenceImage: (ref: ReferenceImageState | null) => {
     set({ referenceImage: ref });
     get().saveToStorage();
@@ -708,7 +682,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     get().saveToStorage();
   },
 
-  // Animation timeline actions
   addFrame: (insertAfterIndex?: number) => {
     const { frames, activeFrameIndex, past } = get();
     const targetIdx = typeof insertAfterIndex === 'number' ? insertAfterIndex : activeFrameIndex;
@@ -868,7 +841,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     }
   },
 
-  // Multi-frame operations
   toggleFrameSelection: (index: number, isMulti: boolean) => {
     const { selectedFrameIndices } = get();
     if (!isMulti) {
@@ -1159,11 +1131,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     return newProject.id;
   },
 
-  /**
-   * Persistence Engine:
-   * immediate = true: Immediate stroke persistence
-   * immediate = false: Debounced metadata persistence
-   */
   saveToStorage: (immediate = false) => {
     if (typeof window === 'undefined') return;
 
@@ -1176,7 +1143,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       set({ saveStatus: 'saving' });
       const state = get();
 
-      // Extract thumbnail preview from active frame's top visible layer or first layer
       const firstFrame = state.frames[0];
       const thumbData = firstFrame?.layers?.find((l) => l.dataUrl)?.dataUrl || null;
 

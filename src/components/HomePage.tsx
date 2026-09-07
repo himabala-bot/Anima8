@@ -45,7 +45,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
     initAuth();
   }, [initAuth]);
 
-  // New Project Modal State
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState<boolean>(false);
   const [projectName, setProjectName] = useState<string>('My 2D Animation');
   const [canvasPreset, setCanvasPreset] = useState<string>('1280x720');
@@ -54,7 +53,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
   const [bgColor, setBgColor] = useState<string | null>('#ffffff');
   const [fps, setFps] = useState<number>(12);
 
-  // Rename modal / popover
   const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null);
   const [renameInput, setRenameInput] = useState<string>('');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -77,7 +75,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
     fetchProjects();
   }, []);
 
-  // Close menus on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -165,7 +162,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
     URL.revokeObjectURL(url);
   };
 
-  // Filter & Sort
   const filteredProjects = projects
     .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
@@ -185,9 +181,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
 
   return (
     <div className="min-h-screen w-full bg-[#F7F7FA] text-[#18181B] font-sans flex flex-col">
-      {/* 1. TOP NAVIGATION HEADER */}
+      
       <header className="h-16 flex-shrink-0 bg-white border-b border-[#E5E5EA] px-4 md:px-8 flex items-center justify-between shadow-xs sticky top-0 z-30">
-        {/* Brand */}
+        
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-9 h-9 rounded-2xl bg-black text-white shadow-sm">
             <Sparkles className="w-5 h-5 text-white" />
@@ -204,14 +200,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
           </div>
         </div>
 
-        {/* Center Nav */}
         <nav className="hidden md:flex items-center gap-1 p-1 rounded-2xl bg-[#F7F7FA] border border-[#E5E5EA]">
           <div className="px-4 py-1.5 rounded-xl text-xs font-bold bg-white text-black shadow-xs border border-[#E5E5EA]">
             Projects Hub
           </div>
         </nav>
 
-        {/* Actions */}
         <div className="flex items-center gap-2.5">
           {isAuthenticated && user ? (
             <button
@@ -245,7 +239,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
         </div>
       </header>
 
-      {/* 2. HERO WELCOME SECTION */}
       <section className="px-4 md:px-8 py-8 md:py-12 max-w-7xl mx-auto w-full">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 md:p-10 rounded-3xl bg-black text-white shadow-xl relative overflow-hidden">
           <div className="relative z-10 space-y-2 max-w-xl">
@@ -269,9 +262,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
         </div>
       </section>
 
-      {/* 3. PROJECTS DASHBOARD SECTION */}
       <main className="flex-1 px-4 md:px-8 pb-16 max-w-7xl mx-auto w-full space-y-6">
-        {/* Search, Filter & Sort Bar */}
+        
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-[#18181B]">Your Animations</h2>
@@ -281,7 +273,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Search Input */}
+            
             <div className="relative flex-1 sm:w-64">
               <Search className="w-4 h-4 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -293,7 +285,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
               />
             </div>
 
-            {/* Sort Dropdown */}
             <div className="flex items-center gap-1.5 bg-white border border-[#E5E5EA] px-3 py-1.5 rounded-xl shadow-xs text-xs">
               <SlidersHorizontal className="w-3.5 h-3.5 text-[#71717A]" />
               <select
@@ -310,7 +301,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
           </div>
         </div>
 
-        {/* Project Cards Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
@@ -321,7 +311,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
             ))}
           </div>
         ) : filteredProjects.length === 0 ? (
-          /* Empty State */
+          
           <div className="flex flex-col items-center justify-center p-12 md:p-16 rounded-3xl bg-white border border-[#E5E5EA] text-center shadow-xs">
             <div className="w-16 h-16 rounded-3xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-black mb-4">
               <Film className="w-8 h-8" />
@@ -355,7 +345,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                   onClick={() => onOpenProject(proj.id)}
                   className="group relative flex flex-col rounded-3xl bg-white border border-[#E5E5EA] hover:border-black/30 hover:shadow-xl hover:shadow-black/5 transition-all duration-200 cursor-pointer overflow-hidden"
                 >
-                  {/* Thumbnail Banner */}
+                  
                   <div className="relative w-full aspect-video bg-[#F7F7FA] border-b border-[#E5E5EA] flex items-center justify-center overflow-hidden">
                     {proj.thumbnailDataUrl ? (
                       <img
@@ -370,7 +360,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                       </div>
                     )}
 
-                    {/* Hover Open Overlay */}
                     <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-xs">
                       <span className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white text-[#18181B] text-xs font-bold shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform">
                         <span>Open Editor</span>
@@ -378,12 +367,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                       </span>
                     </div>
 
-                    {/* Frame Count Pill */}
                     <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-md border border-[#E5E5EA] text-[10px] font-mono font-bold text-[#18181B] shadow-xs">
                       {frameCount} {frameCount === 1 ? 'frame' : 'frames'}
                     </span>
 
-                    {/* Cloud Sync Status Pill */}
                     <span
                       title={isAuthenticated ? 'Cloud Synced with Neon' : 'Saved locally in IndexedDB'}
                       className="absolute top-2 right-2 p-1 rounded-md bg-white/90 backdrop-blur-md border border-[#E5E5EA] shadow-xs flex items-center justify-center"
@@ -396,7 +383,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                     </span>
                   </div>
 
-                  {/* Card Content */}
                   <div className="p-4 flex flex-col justify-between flex-1">
                     <div className="space-y-1">
                       {isRenaming ? (
@@ -427,7 +413,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                           </h3>
 
                           <div className="flex items-center gap-0.5">
-                            {/* Direct Delete Project Button */}
+                            
                             <button
                               onClick={(e) => handleDelete(proj.id, e)}
                               title="Delete Project permanently"
@@ -436,7 +422,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
 
-                            {/* More Card Menu Trigger */}
                             <div className="relative" ref={isMenuOpen ? menuRef : null}>
                               <button
                                 onClick={(e) => {
@@ -449,7 +434,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                                 <MoreVertical className="w-4 h-4" />
                               </button>
 
-                              {/* Dropdown Flyout */}
                               {isMenuOpen && (
                                 <div
                                   className="absolute right-0 top-full mt-1 w-44 p-1.5 rounded-2xl bg-white border border-[#E5E5EA] shadow-xl z-50 text-xs space-y-0.5 animate-in fade-in duration-100"
@@ -491,7 +475,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                         </div>
                       )}
 
-                      {/* Specs */}
                       <div className="flex items-center gap-2 text-[11px] font-mono text-[#71717A]">
                         <span>{proj.canvasWidth} × {proj.canvasHeight}</span>
                         <span>•</span>
@@ -499,7 +482,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                       </div>
                     </div>
 
-                    {/* Relative Time Footer */}
                     <div className="flex items-center gap-1 text-[10px] text-[#A1A1AA] pt-3 mt-2 border-t border-[#E5E5EA]">
                       <Clock className="w-3 h-3" />
                       <span>Edited {formatRelativeTime(proj.updatedAt)}</span>
@@ -512,11 +494,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
         )}
       </main>
 
-      {/* 4. CREATE NEW PROJECT MODAL */}
       {isNewProjectModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
           <div className="relative w-full max-w-md p-6 rounded-3xl bg-white border border-[#E5E5EA] shadow-2xl text-[#18181B] space-y-4">
-            {/* Header */}
+            
             <div className="flex items-center justify-between pb-3 border-b border-[#E5E5EA]">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-zinc-100 text-black border border-zinc-200">
@@ -537,9 +518,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
               </button>
             </div>
 
-            {/* Form Fields */}
             <div className="space-y-3.5">
-              {/* Name */}
+              
               <div>
                 <label className="block text-xs font-semibold text-[#18181B] mb-1">
                   Project Title
@@ -553,7 +533,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                 />
               </div>
 
-              {/* Canvas Resolution Presets */}
               <div>
                 <label className="block text-xs font-semibold text-[#18181B] mb-1">
                   Canvas Size
@@ -584,7 +563,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                   ))}
                 </div>
 
-                {/* Custom Dimensions Input */}
                 {canvasPreset === 'custom' && (
                   <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#E5E5EA]">
                     <div>
@@ -613,7 +591,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                 )}
               </div>
 
-              {/* Background Color */}
               <div>
                 <label className="block text-xs font-semibold text-[#18181B] mb-1">
                   Background
@@ -640,7 +617,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
                 </div>
               </div>
 
-              {/* FPS Slider */}
               <div>
                 <div className="flex justify-between text-xs font-semibold text-[#18181B] mb-1">
                   <span>Frame Rate</span>
@@ -657,7 +633,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E5E5EA]">
               <button
                 type="button"
@@ -679,7 +654,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenProject }) => {
         </div>
       )}
 
-      {/* Auth & Profile Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}

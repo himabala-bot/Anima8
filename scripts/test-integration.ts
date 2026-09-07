@@ -9,7 +9,6 @@ async function runTests() {
   console.log('🚀 STARTING ANIM8 BACKEND & NEON INTEGRATION TESTS');
   console.log('======================================================\n');
 
-  // 1. Password Hashing & Verification
   console.log('[1/6] Testing Password Hashing & Verification (bcryptjs)...');
   const rawPassword = 'SuperSecretAnim8Password!123';
   const hashed = await hashPassword(rawPassword);
@@ -20,7 +19,6 @@ async function runTests() {
   }
   console.log('  ✓ Password hashing and verification working correctly.');
 
-  // 2. JWT Generation & Verification
   console.log('[2/6] Testing JWT Token Signing & Verification...');
   const testUserId = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
   const token = signToken({
@@ -34,7 +32,6 @@ async function runTests() {
   }
   console.log('  ✓ JWT token generation and verification passed.');
 
-  // 3. Database Connection & Schema Verification
   console.log('[3/6] Testing Neon DB Connectivity and User Insertion...');
   const testEmail = `test_user_${Date.now()}@anima8.studio`;
   const createdUsers = await db
@@ -52,7 +49,6 @@ async function runTests() {
   }
   console.log(`  ✓ User created successfully in Neon DB with ID: ${user.id}`);
 
-  // Create profile
   const createdProfiles = await db
     .insert(profiles)
     .values({
@@ -63,7 +59,6 @@ async function runTests() {
   const profile = createdProfiles[0];
   console.log(`  ✓ User profile created in Neon DB with ID: ${profile.id}`);
 
-  // 4. Project Creation & Cascade Relational Verification
   console.log('[4/6] Testing Project Creation, Frames & Layers...');
   const createdProjects = await db
     .insert(projects)
@@ -78,14 +73,12 @@ async function runTests() {
   const project = createdProjects[0];
   console.log(`  ✓ Project created in Neon DB with ID: ${project.id}`);
 
-  // Add Project Member (Owner)
   await db.insert(projectMembers).values({
     projectId: project.id,
     userId: profile.id,
     role: 'owner',
   });
 
-  // Add Frame
   const createdFrames = await db
     .insert(frames)
     .values({
@@ -96,7 +89,6 @@ async function runTests() {
     .returning();
   const frame = createdFrames[0];
 
-  // Add Layer
   await db.insert(layers).values({
     frameId: frame.id,
     layerIndex: 0,
@@ -106,7 +98,6 @@ async function runTests() {
   });
   console.log('  ✓ Relational frames and layers created successfully.');
 
-  // 5. Query Verification
   console.log('[5/6] Verifying Data Integrity via Relational Query...');
   const fetchedProjects = await db
     .select()
@@ -118,7 +109,6 @@ async function runTests() {
   }
   console.log('  ✓ Project query returned exact match from Neon PostgreSQL.');
 
-  // 6. Cascade Cleanup
   console.log('[6/6] Cleaning up test records & verifying foreign key cascade...');
   await db.delete(projects).where(eq(projects.id, project.id));
   const remainingFrames = await db.select().from(frames).where(eq(frames.projectId, project.id));

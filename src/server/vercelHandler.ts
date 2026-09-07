@@ -1,6 +1,5 @@
 import { handleApiRequest } from './api';
 
-// Safe body parser for Node runtime
 async function parseBody(req: any): Promise<any> {
   if (req.body !== undefined && req.body !== null) {
     if (typeof req.body === 'string') {
@@ -37,7 +36,6 @@ async function parseBody(req: any): Promise<any> {
   return undefined;
 }
 
-// Universal response sender for Node ServerResponse
 function sendNodeResponse(res: any, status: number, data: any) {
   if (!res) return;
 
@@ -68,7 +66,7 @@ function sendNodeResponse(res: any, status: number, data: any) {
 }
 
 export default async function handler(req: any, res?: any) {
-  // 1. WEB STANDARD / FETCH API MODE (when res is undefined)
+  
   if (!res && req && (typeof req.json === 'function' || typeof req.text === 'function' || req instanceof Request)) {
     try {
       const request = req as Request;
@@ -124,7 +122,6 @@ export default async function handler(req: any, res?: any) {
     }
   }
 
-  // 2. NODE HTTP SERVERLESS MODE (req, res)
   if (req?.method === 'OPTIONS') {
     if (typeof res?.status === 'function') {
       res.status(200).end();

@@ -59,7 +59,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
       <div className="relative w-full max-w-md p-6 rounded-3xl bg-white border border-[#E5E5EA] shadow-2xl text-[#18181B] max-h-[90vh] flex flex-col">
-        {/* Header */}
+        
         <div className="flex items-center justify-between pb-3 border-b border-[#E5E5EA]">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-black text-white">
@@ -85,7 +85,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Content */}
         {isAuthenticated && user ? (
           <div className="py-6 space-y-4">
             <div className="p-4 rounded-2xl bg-[#F7F7FA] border border-[#E5E5EA] space-y-3">
@@ -128,7 +127,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="py-4 space-y-3.5">
-            {/* Mode Tabs */}
+            
             <div className="grid grid-cols-2 p-1 rounded-2xl bg-[#F7F7FA] border border-[#E5E5EA]">
               <button
                 type="button"

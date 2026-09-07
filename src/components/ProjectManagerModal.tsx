@@ -100,7 +100,6 @@ export const ProjectManagerModal: React.FC<ProjectManagerModalProps> = ({
     }
   };
 
-  // Export current project as .anim8 JSON file
   const handleExportProjectFile = () => {
     const projectData = {
       version: '2.0',
@@ -126,7 +125,6 @@ export const ProjectManagerModal: React.FC<ProjectManagerModalProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  // Import .anim8 / .chibi JSON file
   const handleImportProjectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -167,7 +165,7 @@ export const ProjectManagerModal: React.FC<ProjectManagerModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
       <div className="relative w-full max-w-2xl p-6 rounded-3xl bg-white border border-[#E5E5EA] shadow-2xl text-[#18181B] max-h-[90vh] flex flex-col">
-        {/* Header */}
+        
         <div className="flex items-center justify-between pb-3 border-b border-[#E5E5EA] flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-zinc-100 text-black border border-zinc-200">
@@ -189,7 +187,6 @@ export const ProjectManagerModal: React.FC<ProjectManagerModalProps> = ({
           </button>
         </div>
 
-        {/* Action Toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-2 my-4 flex-shrink-0">
           <button
             onClick={() => setIsCreatingNew(true)}
@@ -227,7 +224,6 @@ export const ProjectManagerModal: React.FC<ProjectManagerModalProps> = ({
           </div>
         </div>
 
-        {/* Modal Body / Project Grid */}
         <div className="flex-1 overflow-y-auto pr-1 space-y-3 min-h-[220px]">
           {isCreatingNew ? (
             <div className="p-4 rounded-3xl bg-[#F7F7FA] border border-[#E5E5EA] space-y-3">
@@ -358,7 +354,6 @@ export const ProjectManagerModal: React.FC<ProjectManagerModalProps> = ({
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end pt-3 border-t border-[#E5E5EA] flex-shrink-0">
           <button
             onClick={onClose}

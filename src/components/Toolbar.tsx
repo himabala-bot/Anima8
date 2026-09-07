@@ -51,7 +51,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const setShapeFill = useStudioStore((state) => state.setShapeFill);
   const setCanvasBgColor = useStudioStore((state) => state.setCanvasBgColor);
 
-  // Popover states
   const [isBrushSettingsOpen, setIsBrushSettingsOpen] = useState<boolean>(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState<boolean>(false);
   const [isBgOpen, setIsBgOpen] = useState<boolean>(false);
@@ -60,7 +59,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const paletteRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
 
-  // Close popovers on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -101,7 +99,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     <aside
       className={`relative flex md:flex-col items-center justify-start gap-1 p-1.5 rounded-2xl md:rounded-3xl bg-white border border-[#E5E5EA] shadow-lg shadow-zinc-200/50 select-none z-30 overflow-visible ${className}`}
     >
-      {/* 2-Column Compact Grid on Desktop, Horizontal Scroll on Mobile */}
+      
       <div className="flex md:grid md:grid-cols-2 items-center gap-1 overflow-x-auto md:overflow-visible">
         {tools.map((t) => {
           const isActive = activeTool === t.id;
@@ -125,7 +123,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           );
         })}
 
-        {/* Brush Settings Button */}
         <div className="relative" ref={brushSettingsRef}>
           <button
             onClick={() => setIsBrushSettingsOpen(!isBrushSettingsOpen)}
@@ -140,11 +137,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <Sliders className="w-3.5 h-3.5" />
           </button>
 
-          {/* Compact Dropdown Flyout Panel */}
           {isBrushSettingsOpen && (
             <div className="absolute left-1/2 -translate-x-1/2 md:translate-x-0 md:left-full bottom-full md:bottom-0 md:top-auto mb-3 md:mb-0 md:ml-3 w-60 p-3 rounded-2xl bg-white border border-[#E5E5EA] shadow-2xl z-50 text-[#18181B] animate-in fade-in zoom-in-95 duration-150 space-y-2.5 max-h-[320px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300">
               {activeTool === 'eraser' ? (
-                /* Eraser Settings */
+                
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between pb-1.5 border-b border-[#E5E5EA]">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-[#18181B]">
@@ -193,7 +189,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   </div>
                 </div>
               ) : (
-                /* Brush & Presets Settings */
+                
                 <div className="space-y-2.5">
                   <BrushPresets />
 
@@ -254,9 +250,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       <div className="hidden md:block w-full h-[1px] bg-[#E5E5EA] my-0.5 flex-shrink-0" />
       <div className="md:hidden w-[1px] h-6 bg-[#E5E5EA] mx-0.5 flex-shrink-0" />
 
-      {/* Color Studio & Canvas Background Row */}
       <div className="flex md:grid md:grid-cols-2 items-center gap-1">
-        {/* Color Studio Swatch */}
+        
         <div className="relative" ref={paletteRef}>
           <button
             onClick={() => setIsPaletteOpen(!isPaletteOpen)}
@@ -273,10 +268,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             </span>
           </button>
 
-          {/* Compact Dropdown Flyout Panel */}
           {isPaletteOpen && (
             <div className="absolute left-1/2 -translate-x-1/2 md:translate-x-0 md:left-full bottom-full md:bottom-0 md:top-auto mb-3 md:mb-0 md:ml-3 w-64 p-3 rounded-2xl bg-white border border-[#E5E5EA] shadow-2xl z-50 text-[#18181B] animate-in fade-in zoom-in-95 duration-150 space-y-3">
-              {/* Header */}
+              
               <div className="flex items-center justify-between pb-2 border-b border-[#E5E5EA]">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#18181B]">
                   <Palette className="w-3.5 h-3.5 text-black" />
@@ -288,9 +282,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 />
               </div>
 
-              {/* Color Wheel & Hex Code Input Row */}
               <div className="flex items-center gap-2.5 p-2 rounded-xl bg-[#F7F7FA] border border-[#E5E5EA]">
-                {/* Visual Color Wheel Picker Trigger */}
+                
                 <label
                   title="Click to Open Color Wheel / Custom Spectrum"
                   className="relative w-8 h-8 rounded-full cursor-pointer shadow-sm hover:scale-105 active:scale-95 transition-transform flex-shrink-0 border-2 border-white ring-1 ring-black/15 overflow-hidden flex items-center justify-center group"
@@ -307,7 +300,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   <div className="w-2.5 h-2.5 rounded-full bg-white/80 shadow-xs pointer-events-none group-hover:scale-110 transition-transform" />
                 </label>
 
-                {/* Hex Code Input Box */}
                 <div className="flex-1 min-w-0">
                   <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-0.5">
                     Hex Code
@@ -334,7 +326,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 </div>
               </div>
 
-              {/* 16 Core Colors Grid */}
               <div>
                 <div className="flex items-center justify-between text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
                   <span>Core Palette</span>
@@ -365,7 +356,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 </div>
               </div>
 
-              {/* Recent Colors Strip */}
               {recentColors.length > 0 && (
                 <div className="pt-2 border-t border-zinc-200">
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
@@ -394,7 +384,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           )}
         </div>
 
-        {/* Canvas Background Popover */}
         <div className="relative" ref={bgRef}>
           <button
             onClick={() => setIsBgOpen(!isBgOpen)}
@@ -405,7 +394,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <Layers className="w-3.5 h-3.5" />
           </button>
 
-          {/* Compact Dropdown Flyout Panel */}
           {isBgOpen && (
             <div className="absolute left-1/2 -translate-x-1/2 md:translate-x-0 md:left-full bottom-full md:bottom-0 md:top-auto mb-3 md:mb-0 md:ml-3 w-48 p-2.5 rounded-2xl bg-white border border-[#E5E5EA] shadow-xl z-50 text-[#18181B] animate-in fade-in zoom-in-95 duration-150">
               <span className="block text-xs font-bold text-[#18181B] pb-1 mb-1.5 border-b border-[#E5E5EA]">

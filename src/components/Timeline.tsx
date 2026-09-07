@@ -88,7 +88,7 @@ const FrameThumbnail: React.FC<FrameThumbnailProps> = ({
           : 'bg-[#F7F7FA] hover:bg-white border border-[#E5E5EA] hover:border-black/30'
       }`}
     >
-      {/* Thumbnail Canvas */}
+      
       <div
         className="relative rounded-xl overflow-hidden border border-[#E5E5EA] bg-white shadow-inner flex items-center justify-center"
         style={{
@@ -103,7 +103,6 @@ const FrameThumbnail: React.FC<FrameThumbnailProps> = ({
           className="w-full h-full object-contain"
         />
 
-        {/* Frame Index Badge */}
         <span
           className={`absolute bottom-0.5 right-1 px-1 rounded text-[9px] font-mono font-bold ${
             isActive ? 'bg-black text-white' : 'bg-white/90 text-[#71717A]'
@@ -112,7 +111,6 @@ const FrameThumbnail: React.FC<FrameThumbnailProps> = ({
           #{index + 1}
         </span>
 
-        {/* Exposure Hold Badge */}
         {frame.exposure > 1 && (
           <span className="absolute top-0.5 left-1 px-1 rounded bg-amber-500 text-white text-[8px] font-mono font-bold">
             {frame.exposure}x
@@ -120,7 +118,6 @@ const FrameThumbnail: React.FC<FrameThumbnailProps> = ({
         )}
       </div>
 
-      {/* Frame Exposure Stepper (when active) */}
       {isActive && (
         <div
           className="flex items-center gap-1 mt-1 px-1 rounded-lg bg-white border border-[#E5E5EA] text-[10px] text-[#71717A]"
@@ -143,7 +140,6 @@ const FrameThumbnail: React.FC<FrameThumbnailProps> = ({
         </div>
       )}
 
-      {/* Hover / Active Action Overlay */}
       <div
         className={`absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-0.5 p-0.5 rounded-lg bg-white border border-[#E5E5EA] shadow-md transition-opacity z-20 ${
           isActive
@@ -225,7 +221,6 @@ export const Timeline: React.FC<{
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
-  // Playback engine respecting frame exposures & audio sync
   useEffect(() => {
     if (!isPlaying || frames.length <= 1) {
       if (audioElementRef.current) {
@@ -283,7 +278,7 @@ export const Timeline: React.FC<{
     <div
       className={`flex flex-col gap-2 p-2.5 md:p-3 rounded-2xl md:rounded-3xl bg-white border border-[#E5E5EA] shadow-lg shadow-zinc-200/50 select-none ${className}`}
     >
-      {/* Row 1: Horizontally scrollable filmstrip */}
+      
       <div
         ref={scrollContainerRef}
         className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-zinc-300"
@@ -310,7 +305,6 @@ export const Timeline: React.FC<{
           />
         ))}
 
-        {/* Add Frame Button */}
         <button
           onClick={() => addFrame()}
           title="Add New Frame"
@@ -322,7 +316,6 @@ export const Timeline: React.FC<{
         </button>
       </div>
 
-      {/* Row 2: Multi-Frame Action Bar OR Transport Controls */}
       {hasMultiSelection ? (
         <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-zinc-300 bg-zinc-100 p-2 rounded-xl text-xs text-black font-medium">
           <div className="flex items-center gap-1.5">
@@ -366,7 +359,7 @@ export const Timeline: React.FC<{
         </div>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-[#E5E5EA] text-xs text-[#18181B]">
-          {/* Playback Controls */}
+          
           <div className="flex items-center gap-1.5">
             <button
               onClick={prevFrame}
@@ -413,7 +406,6 @@ export const Timeline: React.FC<{
               <Repeat className="w-3.5 h-3.5" />
             </button>
 
-            {/* Frame Counter */}
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#F7F7FA] border border-[#E5E5EA] font-mono text-[#18181B] font-semibold text-xs ml-0.5">
               <span className="text-[#71717A]">Frame</span>
               <span className="text-black font-bold">{activeFrameIndex + 1}</span>
@@ -421,7 +413,6 @@ export const Timeline: React.FC<{
               <span>{frames.length}</span>
             </div>
 
-            {/* Paste Button if clipboard has frames */}
             {copiedFrames && copiedFrames.length > 0 && (
               <button
                 onClick={pasteFrames}
@@ -434,9 +425,8 @@ export const Timeline: React.FC<{
             )}
           </div>
 
-          {/* Audio & FPS Controls */}
           <div className="flex items-center gap-2">
-            {/* Audio Chip */}
+            
             <button
               onClick={onOpenAudioModal}
               title="Audio Track Settings"
@@ -450,7 +440,6 @@ export const Timeline: React.FC<{
               <span>{audioTrack ? 'Audio Active' : '+ Audio'}</span>
             </button>
 
-            {/* FPS Slider */}
             <div className="flex items-center gap-2 bg-[#F7F7FA] px-3 py-1 rounded-xl border border-[#E5E5EA]">
               <div className="flex items-center gap-1 text-[#71717A] text-[11px] font-semibold">
                 <Sparkles className="w-3.5 h-3.5 text-black" />

@@ -1,9 +1,3 @@
-/**
- * Object Storage Interface for Anim8 Studio
- * Decouples heavy binary asset storage (audio, reference images, thumbnails, export renders)
- * from the relational Neon PostgreSQL database.
- */
-
 export interface AssetUploadResult {
   storagePath: string;
   url?: string;
@@ -22,10 +16,6 @@ export interface IAssetStorage {
   getUrl(path: string): string;
 }
 
-/**
- * Local / Browser-side Asset Storage Implementation
- * Holds asset references locally while offline, ready to pipe to S3/R2/Supabase storage in cloud mode.
- */
 export class LocalAssetStorage implements IAssetStorage {
   async upload(
     path: string,
@@ -46,7 +36,7 @@ export class LocalAssetStorage implements IAssetStorage {
   }
 
   async delete(_path: string): Promise<void> {
-    // Local no-op
+    
   }
 
   getUrl(path: string): string {

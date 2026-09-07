@@ -27,7 +27,7 @@
   }
 }
 
-/* Crisp pixel rendering across all browsers */
+
 canvas {
   image-rendering: -moz-crisp-edges;
   image-rendering: -webkit-crisp-edges;
@@ -35,7 +35,7 @@ canvas {
   image-rendering: crisp-edges;
 }
 
-/* Clean minimal scrollbar */
+
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;

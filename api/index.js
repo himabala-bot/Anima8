@@ -16668,7 +16668,6 @@ var projectMembers = pgTable(
     projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
     userId: uuid("user_id").references(() => profiles.id, { onDelete: "cascade" }).notNull(),
     role: text("role").notNull(),
-    // 'viewer' | 'editor'
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
   },
   (table) => [

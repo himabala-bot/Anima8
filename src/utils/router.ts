@@ -10,7 +10,6 @@ function parseCurrentLocation(): RouteState {
     return { path: '/' };
   }
 
-  // Support both standard pathname and hash routing for maximum environment compatibility
   let currentPath = window.location.pathname;
   if (window.location.hash.startsWith('#/')) {
     currentPath = window.location.hash.substring(1);
@@ -47,7 +46,6 @@ export function useRouter() {
   const navigate = useCallback((targetPath: string) => {
     if (typeof window === 'undefined') return;
 
-    // Use HTML5 pushState
     try {
       window.history.pushState({}, '', targetPath);
     } catch {

@@ -73,7 +73,6 @@ export const LayerPanel: React.FC<{ className?: string }> = ({ className = '' })
   const currentFrame = frames[activeFrameIndex];
   if (!currentFrame) return null;
 
-  // Display top layer first (reversed array for rendering)
   const layers = currentFrame.layers;
 
   const handleStartRename = (layer: Layer) => {
@@ -92,7 +91,7 @@ export const LayerPanel: React.FC<{ className?: string }> = ({ className = '' })
     <div
       className={`flex flex-col rounded-3xl bg-white border border-[#E5E5EA] shadow-xl shadow-zinc-200/50 p-3 select-none w-72 ${className}`}
     >
-      {/* Header */}
+      
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#E5E5EA]">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-xl bg-black text-white">
@@ -116,7 +115,6 @@ export const LayerPanel: React.FC<{ className?: string }> = ({ className = '' })
         </button>
       </div>
 
-      {/* Layer List (Top layer drawn on top) */}
       <div className="space-y-2 max-h-64 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-300">
         {[...layers].reverse().map((layer, reverseIdx) => {
           const actualIndex = layers.length - 1 - reverseIdx;
@@ -133,12 +131,11 @@ export const LayerPanel: React.FC<{ className?: string }> = ({ className = '' })
                   : 'bg-[#F7F7FA] border-[#E5E5EA] hover:bg-white hover:border-[#D4D4D8]'
               }`}
             >
-              {/* Row 1: Preview Thumbnail, Name, Controls */}
+              
               <div className="flex items-center gap-2">
-                {/* 1. Clear Layer Thumbnail Preview */}
+                
                 <LayerThumbnail dataUrl={layer.dataUrl} name={layer.name} />
 
-                {/* 2. Layer Name & Inline Rename */}
                 <div className="flex-1 min-w-0">
                   {isEditing ? (
                     <div
@@ -186,7 +183,6 @@ export const LayerPanel: React.FC<{ className?: string }> = ({ className = '' })
                   )}
                 </div>
 
-                {/* 3. Visibility & Lock Toggle */}
                 <div className="flex items-center gap-0.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => toggleLayerVisibility(layer.id)}
@@ -222,12 +218,11 @@ export const LayerPanel: React.FC<{ className?: string }> = ({ className = '' })
                 </div>
               </div>
 
-              {/* Row 2: Layer Action Buttons (Reorder, Copy, Delete Layer) */}
               <div
                 className="flex items-center justify-between pt-1.5 mt-1.5 border-t border-zinc-200/80 text-[10px] text-zinc-500"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Reorder Up/Down */}
+                
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => reorderLayers(actualIndex, actualIndex + 1)}
@@ -249,7 +244,6 @@ export const LayerPanel: React.FC<{ className?: string }> = ({ className = '' })
                   </button>
                 </div>
 
-                {/* Duplicate & Delete Actions */}
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => duplicateLayer(layer.id)}
@@ -270,7 +264,6 @@ export const LayerPanel: React.FC<{ className?: string }> = ({ className = '' })
                 </div>
               </div>
 
-              {/* Row 3: Opacity Slider (When Layer Active) */}
               {isActive && (
                 <div
                   className="mt-1.5 pt-1.5 border-t border-zinc-200 flex items-center justify-between gap-2"

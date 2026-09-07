@@ -59,7 +59,6 @@ export default function Anim8App() {
   }, []);
   const loadProjectById = useStudioStore((state) => state.loadProjectById);
 
-  // When route is /editor/:id, load project into store if needed
   useEffect(() => {
     if (isEditorRoute && routeProjectId) {
       if (currentProjectId !== routeProjectId) {
@@ -68,7 +67,6 @@ export default function Anim8App() {
     }
   }, [isEditorRoute, routeProjectId, currentProjectId, loadProjectById]);
 
-  // Modal states inside editor
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isSizeModalOpen, setIsSizeModalOpen] = useState<boolean>(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState<boolean>(false);
@@ -115,7 +113,6 @@ export default function Anim8App() {
   const setIsPlaying = useStudioStore((state) => state.setIsPlaying);
   const saveToStorage = useStudioStore((state) => state.saveToStorage);
 
-  // Close popovers on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (onionPopoverRef.current && !onionPopoverRef.current.contains(e.target as Node)) {
@@ -129,7 +126,6 @@ export default function Anim8App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -140,14 +136,12 @@ export default function Anim8App() {
         return;
       }
 
-      // Save shortcut
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
         saveToStorage();
         return;
       }
 
-      // Undo / Redo
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         if (e.shiftKey) {
@@ -164,7 +158,6 @@ export default function Anim8App() {
         return;
       }
 
-      // Playback
       if (e.code === 'Space' && !e.repeat) {
         e.preventDefault();
         setIsPlaying(!useStudioStore.getState().isPlaying);
@@ -181,7 +174,6 @@ export default function Anim8App() {
         return;
       }
 
-      // Tool shortcuts
       switch (e.key.toLowerCase()) {
         case 'v':
           setTool('select');
@@ -232,7 +224,6 @@ export default function Anim8App() {
     setIsEditingName(false);
   };
 
-  // 1. DEFAULT ENTRY ROUTE: HOME PAGE / PROJECT HUB
   if (!isEditorRoute) {
     return (
       <HomePage
@@ -241,12 +232,11 @@ export default function Anim8App() {
     );
   }
 
-  // 2. ANIMATION STUDIO EDITOR ROUTE (/editor/[projectId])
   return (
     <main className="fixed inset-0 flex flex-col h-screen w-screen overflow-hidden bg-[#F7F7FA] text-[#18181B] select-none font-sans">
-      {/* 1. TOP HEADER */}
+      
       <header className="flex-shrink-0 h-14 flex items-center justify-between px-3 md:px-5 bg-white border-b border-[#E5E5EA] shadow-xs z-30">
-        {/* Brand & Back to Home */}
+        
         <div className="flex items-center gap-2 md:gap-3 min-w-0">
           <button
             onClick={() => navigate('/')}
@@ -261,7 +251,6 @@ export default function Anim8App() {
 
           <div className="h-5 w-[1px] bg-[#E5E5EA] hidden md:block flex-shrink-0" />
 
-          {/* Project Title & Autosave Status */}
           <div className="hidden lg:flex items-center gap-2 min-w-0">
             {isEditingName ? (
               <div className="flex items-center gap-1">
@@ -292,7 +281,6 @@ export default function Anim8App() {
               </button>
             )}
 
-            {/* Autosave & Cloud Sync Status Badge */}
             <div className="flex items-center gap-1 text-[10px] text-[#71717A] font-medium">
               {saveStatus === 'saving' || cloudSyncState === 'syncing' ? (
                 <span className="flex items-center gap-1 text-purple-600">
@@ -313,7 +301,6 @@ export default function Anim8App() {
             </div>
           </div>
 
-          {/* Canvas Resolution Chip */}
           <button
             onClick={() => setIsSizeModalOpen(true)}
             title="Change Canvas Resolution"
@@ -326,9 +313,8 @@ export default function Anim8App() {
           </button>
         </div>
 
-        {/* Right Header Controls */}
         <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
-          {/* Reference Image Trigger with Quick Delete Option */}
+          
           <div className="hidden lg:flex items-center">
             <button
               onClick={() => setIsReferenceModalOpen(true)}
@@ -353,7 +339,6 @@ export default function Anim8App() {
             )}
           </div>
 
-          {/* Audio Track Trigger */}
           <button
             onClick={() => setIsAudioModalOpen(true)}
             title="Audio Track Settings"
@@ -363,7 +348,6 @@ export default function Anim8App() {
             <span>Audio</span>
           </button>
 
-          {/* Layer Panel Toggle */}
           <button
             onClick={() => setIsLayerPanelOpen(!isLayerPanelOpen)}
             title="Toggle Layers Panel"
@@ -377,7 +361,6 @@ export default function Anim8App() {
             <span>Layers</span>
           </button>
 
-          {/* Onion Skin Popover */}
           <div className="relative hidden md:block" ref={onionPopoverRef}>
             <button
               onClick={() => setIsOnionPopoverOpen(!isOnionPopoverOpen)}
@@ -463,7 +446,6 @@ export default function Anim8App() {
             )}
           </div>
 
-          {/* Shortcuts Modal Trigger */}
           <button
             onClick={() => setIsShortcutsModalOpen(true)}
             title="Keyboard Shortcuts"
@@ -472,7 +454,6 @@ export default function Anim8App() {
             <HelpCircle className="w-4 h-4" />
           </button>
 
-          {/* User Account / Cloud Sync Trigger */}
           {isAuthenticated && user ? (
             <button
               onClick={() => setIsAuthModalOpen(true)}
@@ -494,7 +475,6 @@ export default function Anim8App() {
             </button>
           )}
 
-          {/* Mobile Overflow Menu */}
           <div className="relative md:hidden" ref={mobileMenuRef}>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -611,7 +591,6 @@ export default function Anim8App() {
             )}
           </div>
 
-          {/* Primary Action: Export Video/GIF Modal */}
           <button
             onClick={() => setIsExportModalOpen(true)}
             className="flex items-center gap-1.5 md:gap-2 px-3.5 md:px-4 py-1.5 md:py-2 rounded-2xl text-xs font-bold bg-black hover:bg-zinc-800 text-white shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -622,19 +601,16 @@ export default function Anim8App() {
         </div>
       </header>
 
-      {/* 2. MAIN WORKSPACE */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0 min-w-0 overflow-hidden relative">
-        {/* Left Toolbar Rail (2-column compact) */}
+        
         <div className="hidden md:flex flex-shrink-0 px-3 py-2 items-center justify-center max-h-full min-h-0 z-20">
           <Toolbar />
         </div>
 
-        {/* Center Canvas Area */}
         <div className="flex-1 flex items-center justify-center min-h-0 min-w-0 overflow-hidden relative">
           <Canvas className="w-full h-full" />
         </div>
 
-        {/* Right Layer Panel (Desktop Collapsible) */}
         {isLayerPanelOpen && (
           <div className="hidden lg:flex flex-shrink-0 w-64 p-3 z-20 max-h-full overflow-y-auto">
             <LayerPanel className="w-full" />
@@ -642,17 +618,14 @@ export default function Anim8App() {
         )}
       </div>
 
-      {/* 3. TIMELINE */}
       <div className="flex-shrink-0 px-2 md:px-4 pb-2 z-20">
         <Timeline onOpenAudioModal={() => setIsAudioModalOpen(true)} />
       </div>
 
-      {/* 4. MOBILE BOTTOM TOOLBAR DOCK */}
       <div className="flex md:hidden flex-shrink-0 px-2 pb-2 pt-0 z-20">
         <Toolbar className="w-full" />
       </div>
 
-      {/* Modals & Dialogs */}
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}

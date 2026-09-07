@@ -65,7 +65,7 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
       <div className="relative w-full max-w-md p-6 rounded-3xl bg-white border border-[#E5E5EA] shadow-2xl text-[#18181B]">
-        {/* Header */}
+        
         <div className="flex items-center justify-between pb-3 border-b border-[#E5E5EA]">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-purple-50 text-purple-600 border border-purple-200">
@@ -87,7 +87,6 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
           </button>
         </div>
 
-        {/* Body */}
         <div className="my-5 space-y-4">
           <input
             type="file"
@@ -120,7 +119,6 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
                 onEnded={() => setIsPlayingAudio(false)}
               />
 
-              {/* Track Card */}
               <div className="p-3.5 rounded-2xl bg-[#F7F7FA] border border-[#E5E5EA] space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
@@ -165,7 +163,6 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
                   </button>
                 </div>
 
-                {/* Volume Slider */}
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-[#71717A] mb-1">
                     <span>Volume</span>
@@ -187,7 +184,6 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
                   />
                 </div>
 
-                {/* Start Offset Slider */}
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-[#71717A] mb-1">
                     <span>Start Offset</span>
@@ -212,7 +208,6 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
                 </div>
               </div>
 
-              {/* Replace / Remove */}
               <div className="flex items-center justify-between gap-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -232,7 +227,6 @@ export const AudioTrackModal: React.FC<AudioTrackModalProps> = ({
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end pt-3 border-t border-[#E5E5EA]">
           <button
             onClick={onClose}

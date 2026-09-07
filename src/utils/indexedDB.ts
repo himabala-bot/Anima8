@@ -1,8 +1,3 @@
-/**
- * Robust IndexedDB storage wrapper for Anim8 2D Studio projects
- * Handles offline persistence, fast-path drawing storage, and background cloud synchronization queues.
- */
-
 export interface ProjectRecord {
   id: string;
   name: string;
@@ -58,13 +53,11 @@ function openDB(): Promise<IDBDatabase> {
     request.onupgradeneeded = (e) => {
       const db = (e.target as IDBOpenDBRequest).result;
 
-      // 1. Projects Store
       if (!db.objectStoreNames.contains(STORE_PROJECTS)) {
         const projStore = db.createObjectStore(STORE_PROJECTS, { keyPath: 'id' });
         projStore.createIndex('updatedAt', 'updatedAt', { unique: false });
       }
 
-      // 2. Sync Queue Store
       if (!db.objectStoreNames.contains(STORE_SYNC_QUEUE)) {
         const queueStore = db.createObjectStore(STORE_SYNC_QUEUE, { keyPath: 'id' });
         queueStore.createIndex('status', 'status', { unique: false });
@@ -72,7 +65,6 @@ function openDB(): Promise<IDBDatabase> {
         queueStore.createIndex('projectId', 'projectId', { unique: false });
       }
 
-      // 3. Auth Session Store (Zero localStorage adherence)
       if (!db.objectStoreNames.contains(STORE_AUTH)) {
         db.createObjectStore(STORE_AUTH, { keyPath: 'key' });
       }
@@ -90,9 +82,6 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-/**
- * Migration helper: seamlessly copies projects from old database if found
- */
 async function migrateFromLegacyDB(targetDb: IDBDatabase): Promise<void> {
   try {
     const legacyReq = indexedDB.open(LEGACY_DB_NAME);
@@ -121,10 +110,6 @@ async function migrateFromLegacyDB(targetDb: IDBDatabase): Promise<void> {
     legacyReq.onerror = () => {};
   } catch {}
 }
-
-// -------------------------------------------------------------
-// PROJECT STORE OPERATIONS
-// -------------------------------------------------------------
 
 export async function saveProjectToDB(project: ProjectRecord): Promise<void> {
   const db = await openDB();
@@ -174,7 +159,6 @@ export async function deleteProjectFromDB(id: string): Promise<void> {
     const store = tx.objectStore(STORE_PROJECTS);
     store.delete(id);
 
-    // Also remove queued operations for this project
     const queueStore = tx.objectStore(STORE_SYNC_QUEUE);
     const idx = queueStore.index('projectId');
     const qReq = idx.getAllKeys(id);
@@ -187,10 +171,6 @@ export async function deleteProjectFromDB(id: string): Promise<void> {
     qReq.onerror = () => resolve();
   });
 }
-
-// -------------------------------------------------------------
-// SYNC QUEUE STORE OPERATIONS
-// -------------------------------------------------------------
 
 export async function enqueueSyncOp(item: Omit<SyncQueueItem, 'id' | 'status' | 'retryCount'>): Promise<SyncQueueItem> {
   const db = await openDB();
@@ -267,10 +247,6 @@ export async function getSyncQueueCount(): Promise<{ pending: number; failed: nu
     req.onerror = () => reject(req.error);
   });
 }
-
-// -------------------------------------------------------------
-// AUTH SESSION STORE OPERATIONS (Zero localStorage)
-// -------------------------------------------------------------
 
 export interface AuthSessionRecord {
   key: 'current_session';

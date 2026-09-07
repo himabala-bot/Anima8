@@ -73,7 +73,7 @@ export const CanvasSizeModal: React.FC<CanvasSizeModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150">
       <div className="relative w-full max-w-md p-6 rounded-3xl bg-white border border-[#E5E5EA] shadow-2xl text-[#18181B]">
-        {/* Header */}
+        
         <div className="flex items-center justify-between pb-3 border-b border-[#E5E5EA]">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-purple-50 text-purple-600 border border-purple-200">
@@ -95,9 +95,8 @@ export const CanvasSizeModal: React.FC<CanvasSizeModalProps> = ({
           </button>
         </div>
 
-        {/* Body */}
         <div className="my-5 space-y-4">
-          {/* Presets */}
+          
           <div>
             <label className="block text-xs font-semibold text-[#18181B] mb-2">
               Standard 2D Animation Formats
@@ -136,7 +135,6 @@ export const CanvasSizeModal: React.FC<CanvasSizeModalProps> = ({
             </div>
           </div>
 
-          {/* Custom Dimension Inputs */}
           <div className="p-3.5 rounded-2xl bg-[#F7F7FA] border border-[#E5E5EA] space-y-2">
             <span className="block text-xs font-semibold text-[#18181B]">
               Custom Resolution
@@ -180,7 +178,6 @@ export const CanvasSizeModal: React.FC<CanvasSizeModalProps> = ({
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E5E5EA]">
           <button
             onClick={onClose}
